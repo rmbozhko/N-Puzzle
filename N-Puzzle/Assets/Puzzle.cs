@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ using UnityEngine;
  * 3. Set its read/write properties to true, top right menu bar
  */
 public class Puzzle : MonoBehaviour {
-	public 	const 	int 	blocksPerLine = 4;
+	public 	int 			blocksPerLine;
 	public 	const 	int		shuffleLength = 20;
 	public	const	float	defaultMoveDuration = .2f;
 	public	const	float	shuffleMoveDuration = .1f;
@@ -29,10 +30,40 @@ public class Puzzle : MonoBehaviour {
 	int					shuffleMovesRemaining;
 	Block[,]			blocks;
 	Vector2Int			prevShuffleOffset;
+	List<String> 		args;
+
+	string 		GetArg(string name, string defaultValue)
+    {
+        int index = args.IndexOf(name);
+        if (index >= 0 && index < args.Count - 1)
+        {
+            return args[index + 1];
+        }
+        return defaultValue;
+    }
+
+	Texture2D	GetImage(string url)
+	{
+		if (url != null)
+		{
+			WWW www = new WWW(url);
+			if (www.isDone && !string.IsNullOrEmpty(www.error))
+	               Debug.Log(www.error);
+			image = www.texture;
+		}
+		else
+			Debug.Log("No value found for -img flag");
+	}
 
 	void		Start()
 	{
-		CreatePuzzle ();
+		args = System.Environment.GetCommandLineArgs().ToList();
+		image = GetImage(GetArg("-img", null));
+		blocksPerLine = Convert.ToInt16(GetArg("-p_size", null));
+		if (blocksPerLine > 0)
+			CreatePuzzle ();
+		else
+			Debug.Log("Puzzle size cannot be negative");
 	}
 
 	void		Update()
