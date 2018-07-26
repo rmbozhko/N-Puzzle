@@ -59,7 +59,7 @@ public class Puzzle : MonoBehaviour {
 	{
 		args = System.Environment.GetCommandLineArgs().ToList();
 		image = GetImage(GetArg("-img", null));
-		blocksPerLine = Convert.ToInt16(GetArg("-p_size", null));
+		blocksPerLine = Convert.ToInt16(GetArg("-size", null));
 		if (blocksPerLine > 0)
 			CreatePuzzle ();
 		else
