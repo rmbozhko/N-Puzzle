@@ -9,6 +9,6 @@ do
 	# photos can also be small_, medium_, large_ 
 	MyFile=$(basename $username)	                   		# strip the filename
 	MyLink='https://cdn.intra.42.fr/users/'$MyFile'.jpg' 	# form proper link for downloading
-
-	/Users/rbozhko/Desktop/Unity -projectPath  "~/Desktop/projects/N-Puzzle/N-Puzzle/Assets" "-img" MyLink "-size" p_size
+	#/Applications/Unity/Unity.app/Contents/MacOS/Unity 
+	./N-Puzzle/n_puzzle "-img=" MyLink "-size=" p_size
 done

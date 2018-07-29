@@ -2,27 +2,31 @@
 #include <fstream>
 #include <string>
 #include <regex>
-#include <boost/algorithm/string.hpp>
 #include <vector>
 
-std::vector<std::string> 		ft_read_data(const char* filename)
+std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+{
+    str.erase(0, str.find_first_not_of(chars));
+    return str;
+}
+
+std::vector<std::string>& 		ft_read_data(const char* filename, std::vector<std::string>& v)
 {
 	std::ifstream 				infile(filename);
 	std::string 				line;
 	size_t						i;
-	std::vector<std::string> 	v;
 
-	i = 0;
+	i = 1;
 	while (std::getline(infile, line))
 	{
-		line = boost::trim_left(line);
-		if (regex_match(line, "^[0-9 \t]+$")) // plain line with numbers
+		ltrim(line);
+		if (std::regex_match(line, std::regex("^[0-9 \t]+$"))) // plain line with numbers
 			std::cout << "Line with digits: " << line << std::endl;
-		else if (regex_match(line, "^[#].+$")) // plain line with comments
+		else if (std::regex_match(line, std::regex("^[#].+$"))) // plain line with comments
 			std::cout << "Line of comment: " << line << std::endl;
-		else if (regex_match(line, "^[0-9 \t]+[#].+$")) // line with comments and numbers
+		else if (std::regex_match(line, std::regex("^[0-9 \t]+[#].+$"))) // line with comments and numbers
 			std::cout << "Line with digits and comments: " << line << std::endl;
-		else if (regex_match(line, "[\n]+") || line[0] == '\n')
+		else if (std::regex_match(line, std::regex("^[ \t\n]*$")) || line[0] == '\n')
 			std::cout << "Line with newlines chars" << std::endl;
 		else
 		{
@@ -36,13 +40,20 @@ std::vector<std::string> 		ft_read_data(const char* filename)
 	return (v);
 }
 
+bool						ft_val_n_init(std::vector<std::string>& data)
+{
+	std::cout << "Starting initialization..." << std::endl;
+	return (true);
+}
+
 int main(int argc, char const *argv[])
 {
 	if (argc == 2)
 	{
+		std::vector<std::string> 		v;
 		try
 		{
-			ft_val_n_init(ft_read_data(argv[1]));
+			ft_val_n_init(ft_read_data(argv[1], v));
 		}
 		catch (std::string msg)
 		{
@@ -50,6 +61,6 @@ int main(int argc, char const *argv[])
 		}
 	}
 	else
-		std::cout << "Generating pazzle ..." << std::endl;
+		std::cout << "Generating puzzle ..." << std::endl;
 	return (0);
 }

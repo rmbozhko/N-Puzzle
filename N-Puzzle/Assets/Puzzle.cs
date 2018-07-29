@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 /* Setting project:
  * 0. Create GameObject, top left window
@@ -42,7 +43,7 @@ public class Puzzle : MonoBehaviour {
         return defaultValue;
     }
 
-	Texture2D	GetImage(string url)
+	void		SetImage(string url)
 	{
 		if (url != null)
 		{
@@ -58,8 +59,9 @@ public class Puzzle : MonoBehaviour {
 	void		Start()
 	{
 		args = System.Environment.GetCommandLineArgs().ToList();
-		image = GetImage(GetArg("-img", null));
-		blocksPerLine = Convert.ToInt16(GetArg("-size", null));
+		Debug.Log(System.Environment.GetCommandLineArgs());
+		SetImage("https://cdn.intra.42.fr/users/rbozhko.jpg");//GetArg("-img", null));
+		blocksPerLine = 4;//Convert.ToInt16(GetArg("-size", null));
 		if (blocksPerLine > 0)
 			CreatePuzzle ();
 		else
@@ -135,7 +137,7 @@ public class Puzzle : MonoBehaviour {
 
 			Vector2	targetPosition = emptyBlock.transform.position;
 			emptyBlock.transform.position = blockToMove.transform.position;
-			blockToMove.MoveToPosition[targetPosition, duration];
+			blockToMove.MoveToPosition(targetPosition, duration);
 			blockIsMoving = true;
 		}
 	}
@@ -172,7 +174,7 @@ public class Puzzle : MonoBehaviour {
 		// setting blocks-neighbours
 		Vector2Int[] offsets = { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1)};
 		// selecting random neighbour
-		int		randIndex = Random.Range(0, offsets.Length);
+		int		randIndex = UnityEngine.Random.Range(0, offsets.Length);
 		for (int i = 0; i < offsets.Length; i++) {
 			// if we won't succeed with randIndex, then we sum it with 'i', and apply modul in order to stay in bounds
 			Vector2Int	offset = offsets [(randIndex + i) % offsets.Length];
@@ -197,7 +199,7 @@ public class Puzzle : MonoBehaviour {
 	void		CheckIfSolved()
 	{
 		foreach (Block block in blocks) {
-			if (!block.IsAtStartingCoord)
+			if (!block.IsAtStartingCoord())
 				return ;
 		}
 		// if player solves image, then the empty block appears with pixels of image on it
