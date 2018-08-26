@@ -6,13 +6,20 @@
 #include <climits>
 
 namespace NPuzzle {
-
+	enum HEURISTIC
+	{
+		MANHATTAN=0,
+		EUCLIDE,
+		MIS_TILES,
+		LIN_CONF,		
+	};
+	
 	class State
 	{
 	public:
 		State() {}
 		State(size_t* field) : field_(field), f_cost_(0) {};
-		State(size_t* field, size_t f_cost) : field_(field), f_cost_(f_cost) {};
+		State(size_t* field, size_t f_cost, size_t g_cost) : field_(field), f_cost_(f_cost), g_cost_(g_cost) {};
 		~State() {};
 		std::vector<State>	GetChilds(const size_t puzzle_len) const;
 		const size_t*		GetField() const { return (field_); }
@@ -23,19 +30,22 @@ namespace NPuzzle {
 		size_t				findBetterFCost(std::vector<State>& v) const;
 		// void 				SetParent(State& parent) { parent_ = parent; }
 		// State 				GetParent() const { return (parent_); }
+		size_t				GetGCost() const { return (f_cost_); }
+		void				SetGCost(size_t f_cost) { f_cost_ = f_cost; }
 
 	private:
 		size_t*		field_;
 		size_t		f_cost_;
 		size_t		g_cost_;
 	};
+	
+	static	std::string 					VisitStates(const State& st);
 
 	class Solver
 	{
 	public:
-		// final_state_(BuildFinalState(puzzle_len))
-		Solver(size_t puzzle_len=0, size_t* final_state=nullptr, std::string viz_str="")
-					: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str)
+		Solver(size_t puzzle_len=0, size_t* final_state=nullptr, std::string viz_str="", HEURISTIC heuristic=MANHATTAN, bool is_unicost=true)
+					: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), heuristic_(heuristic), is_unicost_(is_unicost)
 					{};
 		~Solver() {};
 		bool		SolveWithA(State& start);
@@ -68,16 +78,34 @@ namespace NPuzzle {
 		}
 	private:
 		size_t					puzzle_len_;
-		size_t*					final_state_; // = {1, 2, 3, 8, 0, 4, 7, 6, 5};
+		size_t*					final_state_;
 		std::string 			viz_str_;
-		// State					start_state_;
+		HEURISTIC 				heuristic_;
+		bool					is_unicost_;
 	};
 
-	static	std::string 					VisitStates(const State& st);
-	static 	std::pair<Solver, State> 		ReadData(const char* filename);
-	static 	int*							BuildFinalState(const size_t puzzle_len);
 }
 using namespace NPuzzle;
+
+void		ft_print_arr(std::vector<size_t> arr, const size_t len)
+{
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		if (i && i % len == 0)
+			std::cout << std::endl;
+		std::cout << arr[i] << " ";
+	}
+	std::cout << std::endl;
+}
+
+void		ft_print_arr(const size_t* arr, const size_t len)
+{
+	for (size_t i = 0; i < (len * len); ++i)
+	{
+		std::cout << arr[i] << " ";
+	}
+	std::cout << std::endl;
+}
 
 size_t		State::findBetterFCost(std::vector<State>& v) const
 {
@@ -213,68 +241,72 @@ std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
     return (str);
 }
 
-// void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
-// {
-// 	arr[row][col] = (*iter)++;
-// 	arr[row][col + 1] = (*iter)++;
-// 	arr[row + 1][col + 1] = (*iter)++;
-// 	arr[row + 1][col] = *iter;
-// }
+void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
+{
+	arr[row][col] = (*iter);
+	iter++;
+	arr[row][col + 1] = (*iter);
+	iter++;
+	arr[row + 1][col + 1] = (*iter);
+	iter++;
+	arr[row + 1][col] = (*iter);
+}
 
-// void		Solver::GenerateFinalState(std::vector<std::vector<size_t>>& arr,
-// 										size_t row, size_t col,	const size_t lvl,
-// 										std::vector<size_t>::const_iterator& iter)
-// {
-// 	if (lvl - (row * 2) == 1)
-// 		arr[row][col] = *iter;
-// 	else if (lvl - (row * 2) == 2)
-// 		ft_handle_square(arr, row, col, iter);
-// 	else
-// 	{
-// 		for (size_t i = row, j = col; j < lvl - col; ++j)
-// 			arr[i][j] = (*iter)++;
-// 		for (size_t i = row + 1, j = lvl - col - 1; i < lvl - row; ++i)
-// 			arr[i][j] = (*iter)++;
-// 		for (size_t i = lvl - row - 1, j = lvl - col - 2; j > col; --j)
-// 			arr[i][j] = (*iter)++;
-// 		for (size_t i = lvl - row - 1, j = col; i > row; --i)
-// 			arr[i][j] = (*iter)++;
-// 		Solver::GenerateFinalState(arr, row + 1, col + 1, lvl, iter);
-// 	}
-// } 
+void		ConstructFinalState(std::vector<std::vector<size_t>>& arr,
+										size_t row, size_t col,	const size_t lvl,
+										std::vector<size_t>::const_iterator& iter)
+{
+	if (lvl - (row * 2) == 1)
+		arr[row][col] = (*iter);
+	else if (lvl - (row * 2) == 2)
+		ft_handle_square(arr, row, col, iter);
+	else
+	{
+		for (size_t i = row, j = col; j < lvl - col; ++j, ++iter)
+			arr[i][j] = (*iter);
+		for (size_t i = row + 1, j = lvl - col - 1; i < lvl - row; ++i, ++iter)
+			arr[i][j] = (*iter);
+		for (size_t i = lvl - row - 1, j = lvl - col - 2; j > col; --j, ++iter)
+			arr[i][j] = (*iter);
+		for (size_t i = lvl - row - 1, j = col; i > row; --i, ++iter)	
+			arr[i][j] = (*iter);
+		ConstructFinalState(arr, row + 1, col + 1, lvl, iter);
+	}
+} 
 
-// template<class ForwardIt>
-// void 	generate(ForwardIt first, ForwardIt last)
-// {
-// 	size_t		i;
+std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
+{
+	std::vector<size_t> 		v;
 
-// 	i = 0;
-//     while (first != last) {
-//         *first++ = i++;
-//     }
-// }
+	for (size_t i = 0; i < f_state.size(); i++)
+		for (size_t j = 0; j < f_state.size(); j++)
+			v.push_back(f_state[i][j]);
+	return (v);
+}
 
-// std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
-// {
-// 	std::vector<size_t> 		v;
+int increasing()
+{ 
+    static size_t i = 1;
+    return i++;
+}
 
-// 	for (size_t i = 0; i < f_state.size(); i++)
-// 		for (size_t j = 0; j < f_state.size(); j++)
-// 			v.push_back(f_state[i][j]);
-// 	return (v);
-// }
+size_t*			 	GenerateFinalState(const size_t puzzle_len)
+{
+	std::vector<size_t> 					seq(puzzle_len * puzzle_len);
+	std::vector<std::vector<size_t>>		final_state;
+	final_state.resize(puzzle_len, std::vector<size_t>(puzzle_len, 0));
 
-// std::vector<size_t> 	GenerateFinalState()
-// {
-// 	std::vector<size_t> 					seq(this.puzzle_len);
-// 	std::vector<std::vector<size_t>>		final_state;
 
-//     std::generate(seq.begin(), seq.end());
-//     std::vector<size_t>::const_iterator i = seq.begin();
-//     GenerateFinalState(final_state, 0, 0, this.puzzle_len, i);
-//     ConvertToVector(final_state);
-//     return (final_state);
-// }
+    std::generate(seq.begin(), seq.end(), increasing);
+    seq[seq.size() - 1] = 0;
+    ft_print_arr(seq, puzzle_len * puzzle_len);
+    std::vector<size_t>::const_iterator i = seq.begin();
+    ConstructFinalState(final_state, 0, 0, puzzle_len, i);
+    ft_print_arr(final_state[0], puzzle_len);
+    ft_print_arr(final_state[1], puzzle_len);
+    ft_print_arr(final_state[2], puzzle_len); 
+    return (&ConvertToVector(final_state)[0]);
+}
 
 std::string& rtrim(std::string& s, const std::string& delimiters = " \f\n\r\t\v" )
 {
@@ -282,12 +314,14 @@ std::string& rtrim(std::string& s, const std::string& delimiters = " \f\n\r\t\v"
    return (s);
 }
 
-std::pair<Solver, State> 		NPuzzle::ReadData(const char* filename)
+std::pair<Solver, State> 		ReadData(const char* filename)
 {
 	std::ifstream 				infile(filename);
 	std::string 				line;
 	size_t						i;
 	std::smatch					m;
+	HEURISTIC					found = MANHATTAN;
+	bool						is_unicost = true;
 	
 	std::vector<size_t> 		fileField;
 	size_t						size;
@@ -346,6 +380,14 @@ std::pair<Solver, State> 		NPuzzle::ReadData(const char* filename)
 			std::cout << "Line of comment: " << m[0].str() << std::endl;
 		else if (std::regex_match(line, m, std::regex("^[ \t\n]*$")) || line[0] == '\n')
 			std::cout << "Line with newlines chars" << std::endl;
+		else if (std::regex_match(line, m, std::regex("^%euclide$")))
+			found = EUCLIDE;
+		else if (std::regex_match(line, m, std::regex("^%lin_conf$")))
+			found = LIN_CONF;
+		else if (std::regex_match(line, m, std::regex("^%mis_tiles$")))
+			found = MIS_TILES;
+		else if (std::regex_match(line, m, std::regex("^%greddy$")))
+			is_unicost = false;
 		else
 		{
 			line = std::string("Error: Invalid syntax on line #") + std::to_string(i);
@@ -354,7 +396,7 @@ std::pair<Solver, State> 		NPuzzle::ReadData(const char* filename)
 		i++;
 	}
 	if (fileField.size() && (fileField.size() == (size * size)) && (std::find(fileField.begin(), fileField.end(), 0) != fileField.end()))
-		return std::make_pair<Solver, State>(Solver(size, static_cast<size_t*>(&fileField[0]), ""), State(static_cast<size_t*>(&fileField[0])));
+		return std::make_pair<Solver, State>(Solver(size, GenerateFinalState(size), "", found, is_unicost), State(static_cast<size_t*>(&fileField[0])));
 	else
 		throw std::string("Passed data is not sufficient or exceeds");
 }
@@ -477,8 +519,8 @@ std::pair<Solver, State> 		NPuzzle::ReadData(const char* filename)
 
 // void		Solver::SetFCost(const NPuzzle::State& parent)
 // {
-// 	this->f_cost = parent.g_cost + 1 + Solver::CalcHCost();
-// 	this->f_cost += (Solver::GreedyMode) ? 0 : (parent.f_cost - parent.g_cost);
+// 	this->f_cost_ = parent.g_cost + 1 + Solver::CalcHCost();
+// 	this->f_cost_ += (Solver::GreedyMode) ? 0 : (parent.f_cost - parent.g_cost);
 // }
 
 bool		Solver::CheckIfSolvable(const NPuzzle::State& st) const
@@ -488,7 +530,6 @@ bool		Solver::CheckIfSolvable(const NPuzzle::State& st) const
     for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()) - 1; i++)
         for (size_t j = i + 1; j < (this->GetPuzzleSize() * this->GetPuzzleSize()); j++)
         	inv_count += (st.TileAt(j) && st.TileAt(i) &&  st.TileAt(i) > st.TileAt(j)) ? 1 : 0;
-    std::cout << "inv_count:" << inv_count << std::endl;
     if ((inv_count % 2) != 0)
     	throw std::string("Passed puzzle set is unsolvable");
     return (true);
@@ -501,13 +542,11 @@ int 		main(int argc, char const *argv[])
 	{
 		try
 		{
-			std::pair<Solver, State>parsed = NPuzzle::ReadData(argv[1]);
+			std::pair<Solver, State>parsed = ReadData(argv[1]);
 			Solver solv = parsed.first;
 			State st = parsed.second;
 			if (solv.CheckIfSolvable(st))
 			{
-				std::cout << "Solvable" << std::endl;
-
 				if (solv.GetPuzzleSize() == 3) // what to do if len == 2?
 					std::cout << solv.SolveWithA(st) << std::endl;
 				// else
