@@ -14,13 +14,20 @@ namespace NPuzzle {
 		State(size_t* field) : field_(field), f_cost_(0) {};
 		State(size_t* field, size_t f_cost) : field_(field), f_cost_(f_cost) {};
 		~State() {};
-		std::deque<State>	GetChilds(const State& st);
+		std::vector<State>	GetChilds(const size_t puzzle_len) const;
 		const size_t*		GetField() const { return (field_); }
 		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
+		bool				isInArray(std::vector<State>& v) const;
+		size_t				GetFCost() const { return (f_cost_); }
+		void				SetFCost(size_t f_cost) { f_cost_ = f_cost; }
+		size_t				findBetterFCost(std::vector<State>& v) const;
+		// void 				SetParent(State& parent) { parent_ = parent; }
+		// State 				GetParent() const { return (parent_); }
 
 	private:
 		size_t*		field_;
 		size_t		f_cost_;
+		size_t		g_cost_;
 	};
 
 	class Solver
@@ -72,39 +79,101 @@ namespace NPuzzle {
 }
 using namespace NPuzzle;
 
-// bool		Solver::SolveWithA(State& start)
-// {
-// 	std::deque<State> 	opened;
-// 	std::deque<State> 	closed;
+size_t		State::findBetterFCost(std::vector<State>& v) const
+{
+	size_t		res;
 
-// 	opened.push_back(start);
-// 	while (!opened.empty())
-// 	{
-// 		ft_sort_by_f_cost(opened);
-// 		State		temp = opened.pop_front();
-// 		close.add(temp);
+	res = UINT_MAX;
+	for (std::vector<State>::iterator i = v.begin(); i != v.end(); ++i)
+		if (this->GetField() == (*i).GetField())
+			res = (res > (*i).GetFCost()) ? (*i).GetFCost() : res; 
+	return (res);
+}
 
-// 		if (temp == final_state) // implement == overloading, define final_state
-// 			return (true);
+int			find_in_arr(const size_t* arr, const size_t size, const size_t elem)
+{
+	for (int i = 0; i < size; ++i)
+		if (arr[i] == elem)
+			return (i);
+	return (-1);
+}
 
-// 		std::deque<State> 	childs = State::GetChilds(temp);
-// 		for (State& child : childs)
-// 		{
-// 			// if (child.isInArray(closed))
-// 				// continue ;
-// 			// if in closed and needed to be renewed we need to extract node from closed_list
-// 			if ((child.isInArray(opened) || child.isInArray(closed) && child.f_cost > ft_get_f_cost())
-// 				|| (!child.isInArray(opened) && !child.isInArray(closed)))
-// 			{
-// 				child.f_cost = ft_get_f_cost();
-// 				child.parent = temp;
-// 				if (!child.isInArray(opened))
-// 					opened.push_back(child);
-// 			}
-// 		} 
-// 	}
-// 	return (false);
-// }
+size_t*		prepareField(const size_t* field, const size_t x, const size_t y, size_t pos, size_t puzzle_len)
+{
+	std::vector<size_t> 	new_field(field, field + puzzle_len);
+
+	if (pos == 0 && y > 0)
+		std::swap(new_field[y * puzzle_len + x], new_field[(y - 1) * puzzle_len + x]);
+	else if (pos == 1 && y < puzzle_len - 1)
+		std::swap(new_field[y * puzzle_len + x], new_field[(y - 1) * puzzle_len + x]);
+	else if (pos == 2 && x > 0)
+		std::swap(new_field[y * puzzle_len + x], new_field[y * puzzle_len + (x + 1)]);
+	else if (pos == 3 && x < puzzle_len - 1)
+		std::swap(new_field[y * puzzle_len + x], new_field[y * puzzle_len + (x + 1)]);
+	return (&new_field[0]);
+}
+
+std::vector<State> 	State::GetChilds(const size_t puzzle_len) const
+{
+	std::vector<State> 		v;
+	size_t					pos = static_cast<size_t>(find_in_arr(this->GetField(), puzzle_len, 0));
+	size_t					x = pos % puzzle_len;
+	size_t					y = pos / puzzle_len;
+
+	for (size_t i = 0; i < 4; ++i)
+	{
+		size_t* updated_field = prepareField(this->GetField(), x, y, i, puzzle_len);
+		if (updated_field != nullptr)
+			v.push_back(State(updated_field));
+	}
+	return (v);
+}
+
+bool				State::isInArray(std::vector<State>& v) const
+{
+	for (std::vector<State>::iterator i = v.begin(); i != v.end(); ++i)
+		if (this->GetField() == (*i).GetField())
+			return (true);
+	return (false);
+}
+
+bool		Solver::SolveWithA(State& start)
+{
+	std::vector<State> 	opened;
+	std::vector<State> 	closed;
+
+	opened.push_back(start);
+	while (!opened.empty())
+	{
+		std::sort(opened.begin(), opened.end(), [](State a, State b) { return (a.GetFCost() < b.GetFCost()); });
+		State		temp = opened.front();
+		opened.pop_back();		
+		closed.push_back(temp);
+
+		if (temp.GetField() == Solver::GetFinalState()) // implement == overloading, define final_state
+			return (true);
+
+		std::vector<State> 	childs = temp.GetChilds(this->GetPuzzleSize());
+		for (State& child : childs)
+		{
+			// if (child.isInArray(closed))
+				// continue ;
+			// if in closed and needed to be renewed we need to extract node from closed_list
+			if (!child.isInArray(opened) && !child.isInArray(closed))
+				opened.push_back(child);	
+			else if (child.isInArray(opened) || child.isInArray(closed))
+			{
+				size_t		f_cost;
+				f_cost = child.findBetterFCost(opened);
+				child.SetFCost(child.GetFCost() > f_cost ? f_cost : child.GetFCost());
+				f_cost = child.findBetterFCost(closed);
+				child.SetFCost(child.GetFCost() > f_cost ? f_cost : child.GetFCost());
+				opened.push_back(child);
+			}
+		} 
+	}
+	return (false);
+}
 
 // State 		Solver::StatesDeepening(State& temp, const size_t threshold)
 // {
@@ -434,20 +503,15 @@ int 		main(int argc, char const *argv[])
 		{
 			std::pair<Solver, State>parsed = NPuzzle::ReadData(argv[1]);
 			Solver solv = parsed.first;
-			auto temp = parsed.second.GetField();
-			for (int i = 0; i < solv.GetPuzzleSize() * solv.GetPuzzleSize(); ++i)
-			{
-				std::cout << temp[i] << std::endl;
-			}
-			if (solv.CheckIfSolvable(parsed.second))
+			State st = parsed.second;
+			if (solv.CheckIfSolvable(st))
 			{
 				std::cout << "Solvable" << std::endl;
-			// 	NPuzzle::State 		st;
 
-			// 	if (solv.puzzle_len == 3) // what to do if len == 2
-			// 		st = solv.SolveWithA(solv.start_state);
-			// 	else
-			// 		st = solv.SolveWithIDA(solv.start_state);
+				if (solv.GetPuzzleSize() == 3) // what to do if len == 2?
+					std::cout << solv.SolveWithA(st) << std::endl;
+				// else
+					// solv.SolveWithIDA(st);
 			// 	solv.viz_str = NPuzzle::VisitStates(st); // combine states into xdotted string
 			}
 
