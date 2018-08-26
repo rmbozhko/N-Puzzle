@@ -266,7 +266,7 @@ void		ConstructFinalState(std::vector<std::vector<size_t>>& arr,
 			arr[i][j] = (*iter);
 		for (size_t i = row + 1, j = lvl - col - 1; i < lvl - row; ++i, ++iter)
 			arr[i][j] = (*iter);
-		for (size_t i = lvl - row - 1, j = lvl - col - 2; j > col; --j, ++iter)
+		for (size_t i = lvl - row - 1, j = lvl - col - 1; j > col; --j, ++iter)
 			arr[i][j] = (*iter);
 		for (size_t i = lvl - row - 1, j = col; i > row; --i, ++iter)	
 			arr[i][j] = (*iter);
