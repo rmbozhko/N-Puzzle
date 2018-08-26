@@ -3,6 +3,7 @@
 #include <string>
 #include <regex>
 #include <vector>
+#include <climits>
 
 namespace NPuzzle {
 
@@ -10,25 +11,36 @@ namespace NPuzzle {
 	{
 	public:
 		State() {}
-		State(size_t* field) : field_(field)  {};
+		State(size_t* field) : field_(field), f_cost_(0) {};
+		State(size_t* field, size_t f_cost) : field_(field), f_cost_(f_cost) {};
 		~State() {};
 		std::deque<State>	GetChilds(const State& st);
 		const size_t*		GetField() const { return (field_); }
+		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
 
 	private:
 		size_t*		field_;
+		size_t		f_cost_;
 	};
 
 	class Solver
 	{
 	public:
 		// final_state_(BuildFinalState(puzzle_len))
-		Solver(size_t puzzle_len=0, size_t* final_state=nullptr, std::string viz_str="", State st=NULL) : puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), start_state_(st) {};
+		Solver(size_t puzzle_len=0, size_t* final_state=nullptr, std::string viz_str="")
+					: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str)
+					{};
 		~Solver() {};
 		bool		SolveWithA(State& start);
+		bool		SolveWithIDA(State& start);
+		State 		StatesDeepening(State& temp, const size_t threshold);
 		bool		CheckIfSolvable(const NPuzzle::State& st) const;
+		float		ManhattanDist(const int* final_state, const int* curr_state);
+		float		EuclideanDist(const int* final_state, const int* curr_state);
+		float		MisplacedTiles(const int* final_state, const int* curr_state);
 		
-		const size_t*		GetStartState() { return (start_state_.GetField()); }
+		// const size_t*		GetStartState() { return (start_state_.GetField()); }
+		const size_t*		GetFinalState() { return (final_state_); }
 		const size_t		GetPuzzleSize() const { return (puzzle_len_); }
 		const std::string&	GetVisStr() const { return (viz_str_); }
 
@@ -51,79 +63,80 @@ namespace NPuzzle {
 		size_t					puzzle_len_;
 		size_t*					final_state_; // = {1, 2, 3, 8, 0, 4, 7, 6, 5};
 		std::string 			viz_str_;
-		State					start_state_;
+		// State					start_state_;
 	};
 
-	static	std::string 		VisitStates(const State& st);
-	static 	Solver		 		ReadData(const char* filename);
-	static 	int*				BuildFinalState(const size_t puzzle_len);
+	static	std::string 					VisitStates(const State& st);
+	static 	std::pair<Solver, State> 		ReadData(const char* filename);
+	static 	int*							BuildFinalState(const size_t puzzle_len);
 }
+using namespace NPuzzle;
 
-bool		Solver::SolveWithA(State& start)
-{
-	std::deque<State> 	opened;
-	std::deque<State> 	closed;
+// bool		Solver::SolveWithA(State& start)
+// {
+// 	std::deque<State> 	opened;
+// 	std::deque<State> 	closed;
 
-	opened.push_back(start);
-	while (!opened.empty())
-	{
-		ft_sort_by_f_cost(opened);
-		State		temp = opened.pop_front();
-		close.add(temp);
+// 	opened.push_back(start);
+// 	while (!opened.empty())
+// 	{
+// 		ft_sort_by_f_cost(opened);
+// 		State		temp = opened.pop_front();
+// 		close.add(temp);
 
-		if (temp == final_state) // implement == overloading, define final_state
-			return (true);
+// 		if (temp == final_state) // implement == overloading, define final_state
+// 			return (true);
 
-		std::deque<State> 	childs = State::GetChilds(temp);
-		for (State& child : childs)
-		{
-			// if (child.isInArray(closed))
-				// continue ;
-			// if in closed and needed to be renewed we need to extract node from closed_list
-			if ((child.isInArray(opened) || child.isInArray(closed) && child.f_cost > ft_get_f_cost())
-				|| (!child.isInArray(opened) && !child.isInArray(closed)))
-			{
-				child.f_cost = ft_get_f_cost();
-				child.parent = temp;
-				if (!child.isInArray(opened))
-					opened.push_back(child);
-			}
-		} 
-	}
-	return (false);
-}
+// 		std::deque<State> 	childs = State::GetChilds(temp);
+// 		for (State& child : childs)
+// 		{
+// 			// if (child.isInArray(closed))
+// 				// continue ;
+// 			// if in closed and needed to be renewed we need to extract node from closed_list
+// 			if ((child.isInArray(opened) || child.isInArray(closed) && child.f_cost > ft_get_f_cost())
+// 				|| (!child.isInArray(opened) && !child.isInArray(closed)))
+// 			{
+// 				child.f_cost = ft_get_f_cost();
+// 				child.parent = temp;
+// 				if (!child.isInArray(opened))
+// 					opened.push_back(child);
+// 			}
+// 		} 
+// 	}
+// 	return (false);
+// }
 
-State 		Solver::StatesDeepening(State& temp, const size_t threshold)
-{
-	std::deque<State>		children;
-	State 					probState(nullptr, MAX_UINT);
+// State 		Solver::StatesDeepening(State& temp, const size_t threshold)
+// {
+// 	std::deque<State>		children;
+// 	State 					probState(nullptr, UINT_MAX);
 
-	if (threshold > temp.f_cost)
-		return temp;
-	children = temp.GetChilds();
-	for (State& child : children)
-	{
-		StatesDeepening(child, threshold);
-		if (child.f_cost < probState.f_cost)
-			probState = child;
-	}
-	return (probState);
-}
+// 	if (threshold > temp.f_cost)
+// 		return temp;
+// 	children = temp.GetChilds();
+// 	for (State& child : children)
+// 	{
+// 		StatesDeepening(child, threshold);
+// 		if (child.f_cost < probState.f_cost)
+// 			probState = child;
+// 	}
+// 	return (probState);
+// }
 
-State 		Solver::SolveWithIDA(State& start)
-{
-	State 		temp;
-	size_t		threshold;
+// State 		Solver::SolveWithIDA(State& start)
+// {
+// 	State 		temp;
+// 	size_t		threshold;
 
-	threshold = start.f_cost;
-	while (1)
-	{
-		if (temp.curr_state == Solver::final_state)
-			return (temp);
-		temp = Solver::StatesDeepening(start, threshold);
-		threshold = temp.f_cost;
-	}
-}
+// 	threshold = start.f_cost;
+// 	while (1)
+// 	{
+// 		if (temp.curr_state == Solver::final_state_)
+// 			return (temp);
+// 		temp = Solver::StatesDeepening(start, threshold);
+// 		threshold = temp.f_cost;
+// 	}
+// }
 
 std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
@@ -131,68 +144,68 @@ std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
     return (str);
 }
 
-void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
-{
-	arr[row][col] = (*iter)++;
-	arr[row][col + 1] = (*iter)++;
-	arr[row + 1][col + 1] = (*iter)++;
-	arr[row + 1][col] = *iter;
-}
+// void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
+// {
+// 	arr[row][col] = (*iter)++;
+// 	arr[row][col + 1] = (*iter)++;
+// 	arr[row + 1][col + 1] = (*iter)++;
+// 	arr[row + 1][col] = *iter;
+// }
 
-void		Solver::GenerateFinalState(std::vector<std::vector<size_t>>& arr,
-										size_t row, size_t col,	const size_t lvl,
-										std::vector<size_t>::const_iterator& iter)
-{
-	if (lvl - (row * 2) == 1)
-		arr[row][col] = *iter;
-	else if (lvl - (row * 2) == 2)
-		ft_handle_square(arr, row, col, iter);
-	else
-	{
-		for (size_t i = row, j = col; j < lvl - col; ++j)
-			arr[i][j] = (*iter)++;
-		for (size_t i = row + 1, j = lvl - col - 1; i < lvl - row; ++i)
-			arr[i][j] = (*iter)++;
-		for (size_t i = lvl - row - 1, j = lvl - col - 2; j > col; --j)
-			arr[i][j] = (*iter)++;
-		for (size_t i = lvl - row - 1, j = col; i > row; --i)
-			arr[i][j] = (*iter)++;
-		Solver::GenerateFinalState(arr, row + 1, col + 1, lvl, iter);
-	}
-} 
+// void		Solver::GenerateFinalState(std::vector<std::vector<size_t>>& arr,
+// 										size_t row, size_t col,	const size_t lvl,
+// 										std::vector<size_t>::const_iterator& iter)
+// {
+// 	if (lvl - (row * 2) == 1)
+// 		arr[row][col] = *iter;
+// 	else if (lvl - (row * 2) == 2)
+// 		ft_handle_square(arr, row, col, iter);
+// 	else
+// 	{
+// 		for (size_t i = row, j = col; j < lvl - col; ++j)
+// 			arr[i][j] = (*iter)++;
+// 		for (size_t i = row + 1, j = lvl - col - 1; i < lvl - row; ++i)
+// 			arr[i][j] = (*iter)++;
+// 		for (size_t i = lvl - row - 1, j = lvl - col - 2; j > col; --j)
+// 			arr[i][j] = (*iter)++;
+// 		for (size_t i = lvl - row - 1, j = col; i > row; --i)
+// 			arr[i][j] = (*iter)++;
+// 		Solver::GenerateFinalState(arr, row + 1, col + 1, lvl, iter);
+// 	}
+// } 
 
-template<class ForwardIt>
-void 	generate(ForwardIt first, ForwardIt last)
-{
-	size_t		i;
+// template<class ForwardIt>
+// void 	generate(ForwardIt first, ForwardIt last)
+// {
+// 	size_t		i;
 
-	i = 0;
-    while (first != last) {
-        *first++ = i++;
-    }
-}
+// 	i = 0;
+//     while (first != last) {
+//         *first++ = i++;
+//     }
+// }
 
-std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
-{
-	std::vector<size_t> 		v;
+// std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
+// {
+// 	std::vector<size_t> 		v;
 
-	for (size_t i = 0; i < f_state.size(); i++)
-		for (size_t j = 0; j < f_state.size(); j++)
-			v.push_back(f_state[i][j]);
-	return (v);
-}
+// 	for (size_t i = 0; i < f_state.size(); i++)
+// 		for (size_t j = 0; j < f_state.size(); j++)
+// 			v.push_back(f_state[i][j]);
+// 	return (v);
+// }
 
-std::vector<size_t> 	GenerateFinalState()
-{
-	std::vector<size_t> 					seq(this.puzzle_len);
-	std::vector<std::vector<size_t>>		final_state;
+// std::vector<size_t> 	GenerateFinalState()
+// {
+// 	std::vector<size_t> 					seq(this.puzzle_len);
+// 	std::vector<std::vector<size_t>>		final_state;
 
-    std::generate(seq.begin(), seq.end());
-    std::vector<size_t>::const_iterator i = seq.begin();
-    GenerateFinalState(final_state, 0, 0, this.puzzle_len, i);
-    ConvertToVector(final_state);
-    return (final_state);
-}
+//     std::generate(seq.begin(), seq.end());
+//     std::vector<size_t>::const_iterator i = seq.begin();
+//     GenerateFinalState(final_state, 0, 0, this.puzzle_len, i);
+//     ConvertToVector(final_state);
+//     return (final_state);
+// }
 
 std::string& rtrim(std::string& s, const std::string& delimiters = " \f\n\r\t\v" )
 {
@@ -200,7 +213,7 @@ std::string& rtrim(std::string& s, const std::string& delimiters = " \f\n\r\t\v"
    return (s);
 }
 
-NPuzzle::Solver 		NPuzzle::ReadData(const char* filename)
+std::pair<Solver, State> 		NPuzzle::ReadData(const char* filename)
 {
 	std::ifstream 				infile(filename);
 	std::string 				line;
@@ -244,8 +257,18 @@ NPuzzle::Solver 		NPuzzle::ReadData(const char* filename)
 					std::cout << "PuzzleSize:" << size << std::endl;
 				}
 				else if (std::distance(start, end) == size)
+				{
 					for (; start != std::sregex_iterator(); start++ )
-						fileField.push_back(static_cast<size_t>(atoi((*start).str().c_str())));
+					{
+						size_t		elem = static_cast<size_t>(atoi((*start).str().c_str()));
+						if (elem >= (size * size))
+							throw std::string("Error: Puzzle data is greater than upper bound on the line #") + std::to_string(i);
+						else if ((std::find(fileField.begin(), fileField.end(), elem) != fileField.end()))
+							throw std::string("Error: Puzzle data is repeated on the line #") + std::to_string(i);
+						else
+							fileField.push_back(elem);
+					}
+				}
 				else
 					throw std::string("Error: Puzzle data doesn't correspond to size on the line #") + std::to_string(i);
 			}
@@ -261,143 +284,145 @@ NPuzzle::Solver 		NPuzzle::ReadData(const char* filename)
 		}
 		i++;
 	}
-	if (fileField.size() && (fileField.size() == (size * size)))
-		return (NPuzzle::Solver(size, static_cast<size_t*>(&fileField[0]), "", NPuzzle::State(static_cast<size_t*>(&fileField[0]))));
+	if (fileField.size() && (fileField.size() == (size * size)) && (std::find(fileField.begin(), fileField.end(), 0) != fileField.end()))
+		return std::make_pair<Solver, State>(Solver(size, static_cast<size_t*>(&fileField[0]), ""), State(static_cast<size_t*>(&fileField[0])));
 	else
 		throw std::string("Passed data is not sufficient or exceeds");
 }
 
-size_t		ft_calc_horiz_conflicts()
-{
-	size_t		conflicts;
+// size_t		ft_calc_horiz_conflicts()
+// {
+// 	size_t		conflicts;
 
-	conflicts = 0;
-	for (int i = 0; i < this.puzzle_len; ++i)
-	{
-		size_t		temp;
+// 	conflicts = 0;
+// 	for (int i = 0; i < this.puzzle_len; ++i)
+// 	{
+// 		size_t		temp;
 
-		temp = 0;
-		for (int j = 0; j < this.puzzle_len; ++j)
-		{
-			const size_t		position = i * this.puzzle_len + j;
-			const size_t		num = this.curr_state[position];
+// 		temp = 0;
+// 		for (int j = 0; j < this.puzzle_len; ++j)
+// 		{
+// 			const size_t		position = i * this.puzzle_len + j;
+// 			const size_t		num = this.curr_state[position];
 
-			if (num != 0 && static_cast<size_t>(position / this.puzzle_len) == i)
-			{
-				if (temp < num)
-					temp = num;
-				else
-					conflicts += 2;
-			}
-		}
-	}
-	return (conflicts);
-}
+// 			if (num != 0 && static_cast<size_t>(position / this.puzzle_len) == i)
+// 			{
+// 				if (temp < num)
+// 					temp = num;
+// 				else
+// 					conflicts += 2;
+// 			}
+// 		}
+// 	}
+// 	return (conflicts);
+// }
 
-size_t		ft_calc_vertic_conflicts()
-{
-	size_t		conflicts;
+// size_t		ft_calc_vertic_conflicts()
+// {
+// 	size_t		conflicts;
 
-	conflicts = 0;
-	for (int i = 0; i < this.puzzle_len; ++i)
-	{
-		size_t		temp;
+// 	conflicts = 0;
+// 	for (int i = 0; i < this.puzzle_len; ++i)
+// 	{
+// 		size_t		temp;
 
-		temp = 0;
-		for (int j = 0; j < this.puzzle_len; ++j)
-		{
-			const size_t		position = j * this.puzzle_len + i;
-			const size_t		num = this.curr_state[position];
+// 		temp = 0;
+// 		for (int j = 0; j < this.puzzle_len; ++j)
+// 		{
+// 			const size_t		position = j * this.puzzle_len + i;
+// 			const size_t		num = this.curr_state[position];
 
-			if (num != 0 && static_cast<size_t>(position / this.puzzle_len) == j)
-			{
-				if (temp < num)
-					temp = num;
-				else
-					conflicts += 2;
-			}
-		}
-	}
-	return (conflicts);
-}
+// 			if (num != 0 && static_cast<size_t>(position / this.puzzle_len) == j)
+// 			{
+// 				if (temp < num)
+// 					temp = num;
+// 				else
+// 					conflicts += 2;
+// 			}
+// 		}
+// 	}
+// 	return (conflicts);
+// }
 
-inline size_t		ft_add_lin_conf()
-{
-	return (ft_calc_horiz_conflicts() + ft_calc_vertic_conflicts());
-}
+// inline size_t		ft_add_lin_conf()
+// {
+// 	return (ft_calc_horiz_conflicts() + ft_calc_vertic_conflicts());
+// }
 
-float		Solver::ManhattanDist(const int* final_state, const int* curr_state)
-{
-	float		dist;
+// float		Solver::ManhattanDist(const int* final_state, const int* curr_state)
+// {
+// 	float		dist;
 
-	dist = 0;
-	for (int i = 0; i < (puzzle_len * puzzle_len); ++i)
-	{
-		if (curr_state[i] != 0)
-		{
-			std::pair<size_t, size_t> goal;	
-			goal = ft_find_elem(final_state, curr_state[i]);
-			dist += std::abs((i % puzzle_len) - goal.x) + std::abs((i / puzzle_len) - goal.y);
-		}
-	}
-	dist += (LinearConflict) ? ft_add_lin_conf() : 0;
-	return (dist);
-}
+// 	dist = 0;
+// 	for (int i = 0; i < (this.puzzle_len * this.puzzle_len); ++i)
+// 	{
+// 		if (curr_state[i] != 0)
+// 		{
+// 			std::pair<size_t, size_t> goal;	
+// 			goal = ft_find_elem(final_state, curr_state[i]);
+// 			dist += std::abs((i % puzzle_len) - goal.x) + std::abs((i / puzzle_len) - goal.y);
+// 		}
+// 	}
+// 	dist += (LinearConflict) ? ft_add_lin_conf() : 0;
+// 	return (dist);
+// }
 
-float		Solver::MisplacedTiles(const int* final_state, const int* curr_state)
-{
-	float		num;
+// float		Solver::MisplacedTiles(const int* final_state, const int* curr_state)
+// {
+// 	float		num;
 
-	num = 0;
-	for (int i = 0; i < (puzzle_len * puzzle_len); ++i)
-	{
-		if (curr_state[i] != 0)
-		{
-			std::pair<size_t, size_t> goal;	
-			goal = ft_find_elem(final_state, curr_state[i]);
-			if (!std::abs((i % puzzle_len) - goal.x) && !std::abs((i / puzzle_len) - goal.y))
-				num += 1.0;
-		}
-	}
-	return (num);
-}
+// 	num = 0;
+// 	for (int i = 0; i < (puzzle_len * puzzle_len); ++i)
+// 	{
+// 		if (curr_state[i] != 0)
+// 		{
+// 			std::pair<size_t, size_t> goal;	
+// 			goal = ft_find_elem(final_state, curr_state[i]);
+// 			if (!std::abs((i % puzzle_len) - goal.x) && !std::abs((i / puzzle_len) - goal.y))
+// 				num += 1.0;
+// 		}
+// 	}
+// 	return (num);
+// }
 
-float		Solver::EuclideanDist(const int* final_state, const int* curr_state)
-{
-	float		dist;
+// float		Solver::EuclideanDist(const int* final_state, const int* curr_state)
+// {
+// 	float		dist;
 
-	dist = 0;
-	for (int i = 0; i < (this.puzzle_len * this.puzzle_len); ++i)
-	{
-		if (curr_state[i] != 0)
-		{
-			std::pair<size_t, size_t> 	goal;
-			float						result;
+// 	dist = 0;
+// 	for (int i = 0; i < (this.puzzle_len * this.puzzle_len); ++i)
+// 	{
+// 		if (curr_state[i] != 0)
+// 		{
+// 			std::pair<size_t, size_t> 	goal;
+// 			float						result;
 
-			goal = ft_find_elem(final_state, curr_state[i]);
-			result = std::pow(std::abs((i % this.puzzle_len) - goal.x), 2.0) + std::pow(std::abs((i / this.puzzle_len) - goal.y), 2.0);
-			if (result != 0.0)
-				dist += std::sqrt(result);
-		}
-	}
-	return (dist);
-}
+// 			goal = ft_find_elem(final_state, curr_state[i]);
+// 			result = std::pow(std::abs((i % this.puzzle_len) - goal.x), 2.0) + std::pow(std::abs((i / this.puzzle_len) - goal.y), 2.0);
+// 			if (result != 0.0)
+// 				dist += std::sqrt(result);
+// 		}
+// 	}
+// 	return (dist);
+// }
 
-void		Solver::SetFCost(const NPuzzle::State& parent)
-{
-	this->f_cost = parent.g_cost + 1 + Solver::CalcHCost();
-	this->f_cost += (Solver::GreedyMode) ? 0 : (parent.f_cost - parent.g_cost);
-}
+// void		Solver::SetFCost(const NPuzzle::State& parent)
+// {
+// 	this->f_cost = parent.g_cost + 1 + Solver::CalcHCost();
+// 	this->f_cost += (Solver::GreedyMode) ? 0 : (parent.f_cost - parent.g_cost);
+// }
 
 bool		Solver::CheckIfSolvable(const NPuzzle::State& st) const
 {
 	size_t		inv_count = 0;
 
-    for (size_t i = 0; i < (this.puzzle_len * this.puzzle_len) - 1; i++)
-        for (size_t j = i + 1; j < (this.puzzle_len * this.puzzle_len); j++)
-        	inv_count += (st->field[j] && st->field[i] &&  st->field[i] > st->field[j]) ? 1 : 0;
-
-    return ((inv_count % 2) == 0);
+    for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()) - 1; i++)
+        for (size_t j = i + 1; j < (this->GetPuzzleSize() * this->GetPuzzleSize()); j++)
+        	inv_count += (st.TileAt(j) && st.TileAt(i) &&  st.TileAt(i) > st.TileAt(j)) ? 1 : 0;
+    std::cout << "inv_count:" << inv_count << std::endl;
+    if ((inv_count % 2) != 0)
+    	throw std::string("Passed puzzle set is unsolvable");
+    return (true);
 }
 
 int 		main(int argc, char const *argv[])
@@ -407,14 +432,16 @@ int 		main(int argc, char const *argv[])
 	{
 		try
 		{
-			NPuzzle::Solver solv = NPuzzle::ReadData(argv[1]);
-			auto	temp = solv.GetStartState();
+			std::pair<Solver, State>parsed = NPuzzle::ReadData(argv[1]);
+			Solver solv = parsed.first;
+			auto temp = parsed.second.GetField();
 			for (int i = 0; i < solv.GetPuzzleSize() * solv.GetPuzzleSize(); ++i)
 			{
 				std::cout << temp[i] << std::endl;
 			}
-			// if (solv.CheckIfSolvable(solv.GetStartState()))
-			// {
+			if (solv.CheckIfSolvable(parsed.second))
+			{
+				std::cout << "Solvable" << std::endl;
 			// 	NPuzzle::State 		st;
 
 			// 	if (solv.puzzle_len == 3) // what to do if len == 2
@@ -422,7 +449,7 @@ int 		main(int argc, char const *argv[])
 			// 	else
 			// 		st = solv.SolveWithIDA(solv.start_state);
 			// 	solv.viz_str = NPuzzle::VisitStates(st); // combine states into xdotted string
-			// }
+			}
 
 		}
 		catch (std::string msg)
