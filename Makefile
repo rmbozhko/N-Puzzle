@@ -1,7 +1,7 @@
 NAME = n_puzzle
 CC = g++
 
-SRC = NPuzzle.cpp ProcessingData.cpp Solver.cpp State.cpp
+SRC = NPuzzle.cpp ProcessingData.cpp Solver.cpp State.cpp SolverHeuristics.cpp SolverAlgos.cpp
 OBJ = $(SRC:.cpp=.o)
 CFLAGS = -c -O0 -std=c++11 #-Wall -Wextra -Werror
 HEADERS = NPuzzle.hpp State.hpp Solver.hpp
