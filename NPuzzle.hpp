@@ -6,6 +6,8 @@
 #include <climits>
 #include "Solver.hpp"
 #include "State.hpp"
+#include <cmath>
+#include <limits>
 
 namespace NPuzzle {
 }

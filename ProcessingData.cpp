@@ -25,6 +25,7 @@ namespace NPuzzle
 		
 		std::vector<size_t> 		fileField;
 		size_t						size;
+		Heuristic 				h_func_;
 
 		i = 1;
 		size = 0;
@@ -95,7 +96,13 @@ namespace NPuzzle
 			i++;
 		}
 		if (fileField.size() && (fileField.size() == (size * size)) && (std::find(fileField.begin(), fileField.end(), 0) != fileField.end()))
-			return std::make_pair<Solver, State>(Solver(size, NPuzzle::Solver::GenerateFinalState(size), "", found, is_unicost), State(static_cast<size_t*>(&fileField[0])));
+		{
+			Solver 	solv(size, NPuzzle::Solver::GenerateFinalState(size), "", found, is_unicost);
+			State 	st(static_cast<size_t*>(&fileField[0]));
+			st.SetFCost(st.calcFCost(solv.calcHeuristic(&fileField[0]), 0, is_unicost));
+			st.SetGCost(0);
+			return (std::make_pair(solv, st));
+		}
 		else
 			throw std::string("Passed data is not sufficient or exceeds");
 	}

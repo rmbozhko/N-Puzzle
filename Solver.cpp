@@ -1,4 +1,4 @@
-#include "Solver.hpp"
+#include "NPuzzle.hpp"
 
 void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
 {
@@ -31,6 +31,105 @@ void		ConstructFinalState(std::vector<std::vector<size_t>>& arr,
 			arr[i][j] = (*iter);
 		ConstructFinalState(arr, row + 1, col + 1, lvl, iter);
 	}
+}
+
+float		NPuzzle::Solver::calcHeuristic(const size_t* curr_state) const
+{
+	float		res;
+	HEURISTIC 	func_num;
+
+	func_num = GetHeuristic(); 
+	switch(func_num)
+	{
+		case MANHATTAN:
+			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, false);
+			break ;
+		case EUCLIDE:
+			res = NPuzzle::Solver::EuclideanDist(GetFinalState().first, curr_state);
+			break ;
+		case MIS_TILES:
+			res = NPuzzle::Solver::MisplacedTiles(GetFinalState().first, curr_state);
+			break ;
+		case LIN_CONF:
+			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, true);
+			break ;
+		default:
+			throw std::string("Wrong defined heuristic function");
+	}
+
+	return (res);
+}
+
+std::pair<size_t, size_t>		findArrElem(const size_t* final_state, const size_t size, const size_t elem)
+{
+	std::pair<size_t, size_t> 	goal;
+	size_t 						i;
+
+	for (i = 0; i < (size * size); ++i)
+		if (final_state[i] == elem)
+			break ;
+	return (std::make_pair(i % size, static_cast<size_t>(i / size)));
+}
+
+float		NPuzzle::Solver::ManhattanDist(const size_t* final_state, const size_t* curr_state, bool LinearConflict = false) const
+{
+	float		dist;
+
+	dist = 0;
+	for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()); ++i)
+	{
+		if (curr_state[i] != 0)
+		{
+			std::pair<size_t, size_t> goal;	
+			goal = findArrElem(final_state, this->GetPuzzleSize(), curr_state[i]);
+			dist += std::abs(static_cast<double>((i % this->GetPuzzleSize()) - goal.first))
+						+ std::abs(static_cast<double>((i / this->GetPuzzleSize()) - goal.second));
+		}
+	}
+	// if (LinearConflict)
+		// dist += ft_add_lin_conf();
+	return (dist);
+}
+
+float		NPuzzle::Solver::MisplacedTiles(const size_t* final_state, const size_t* curr_state) const
+{
+	float		num;
+
+	num = 0;
+	for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()); ++i)
+	{
+		if (curr_state[i] != 0)
+		{
+			std::pair<size_t, size_t> goal;	
+			goal = findArrElem(final_state, this->GetPuzzleSize(), curr_state[i]);
+			if (!std::abs(static_cast<double>((i % this->GetPuzzleSize()) - goal.first))
+					&& !std::abs(static_cast<double>(i / this->GetPuzzleSize())) - goal.second)
+				num += 1.0;
+		}
+	}
+	return (num);
+}
+
+float		NPuzzle::Solver::EuclideanDist(const size_t* final_state, const size_t* curr_state) const
+{
+	float		dist;
+
+	dist = 0;
+	for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()); ++i)
+	{
+		if (curr_state[i] != 0)
+		{
+			std::pair<size_t, size_t> 	goal;
+			float						result;
+
+			goal = findArrElem(final_state, this->GetPuzzleSize(), curr_state[i]);
+			result = std::pow(std::abs(static_cast<double>((i % this->GetPuzzleSize()) - goal.first)), 2.0)
+						+ std::pow(std::abs(static_cast<double>((i / this->GetPuzzleSize()) - goal.second)), 2.0);
+			if (result != 0.0)
+				dist += std::sqrt(result);
+		}
+	}
+	return (dist);
 } 
 
 std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
@@ -42,12 +141,6 @@ std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
 			v.push_back(f_state[i][j]);
 	return (v);
 }
-
-// int increasing()
-// { 
-//     static size_t i = 1;
-//     return i++;
-// }
 
 void		ft_print_arr(std::vector<size_t> arr, const size_t len)
 {
@@ -114,7 +207,7 @@ bool		NPuzzle::Solver::SolveWithA(State& start)
 		if (temp == Solver::GetFinalState())
 			return (true);
 
-		std::vector<State> 	childs = temp.GetChilds(this->GetPuzzleSize());
+		std::vector<State> 	childs = temp.GetChildren(GetPuzzleSize(), *this);
 		for (State& child : childs)
 		{
 			// if (child.isInArray(closed))
@@ -134,4 +227,40 @@ bool		NPuzzle::Solver::SolveWithA(State& start)
 		} 
 	}
 	return (false);
+}
+
+NPuzzle::State 		NPuzzle::Solver::StatesDeepening(NPuzzle::State& temp, const size_t threshold) const
+{
+	std::vector<NPuzzle::State>		children;
+	float							tempFCost = std::numeric_limits<float>::max();
+	size_t							pos = 0;
+	
+	if (threshold > temp.GetFCost())
+		return temp;
+	children = temp.GetChildren(GetPuzzleSize(), *this);
+	for (size_t i = 0; i < children.size(); ++i)
+	{
+		StatesDeepening(children[i], threshold);
+		if (children[i].GetFCost() < tempFCost)
+		{
+			tempFCost = children[i].GetFCost();
+			pos = i;
+		}
+	}
+	return (children[pos]);
+}
+
+NPuzzle::State 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State& start) const
+{
+	NPuzzle::State 		temp;
+	float				threshold;
+
+	threshold = start.GetFCost();
+	while (1)
+	{
+		if (temp == Solver::GetFinalState())
+			return (temp);
+		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
+		threshold = temp.GetFCost();
+	}
 }

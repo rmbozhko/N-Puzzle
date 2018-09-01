@@ -1,9 +1,7 @@
-# Hello, World
-
-dlfksksjfkodlsjfsd
-./././././234242./././
-4
-1 2 3 4 #Hey, WAssup?!
-5		8		7		   9
-10	11 	 	 12 6 # lalalala
+5
+1 2 3 4 5
+10 9 8	7 6
+11 	 	 12 13 15 14 # lalalala
+16 18 17 		19 20
+21 23 22 24 0
 #lalalalal

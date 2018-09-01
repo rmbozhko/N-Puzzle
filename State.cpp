@@ -1,4 +1,4 @@
-#include "State.hpp"
+#include "NPuzzle.hpp"
 
 size_t		NPuzzle::State::findBetterFCost(std::vector<State>& v) const
 {
@@ -6,7 +6,7 @@ size_t		NPuzzle::State::findBetterFCost(std::vector<State>& v) const
 
 	res = UINT_MAX;
 	for (std::vector<State>::iterator i = v.begin(); i != v.end(); ++i)
-		if (this->GetField() == (*i).GetField())
+		if (GetField() == (*i).GetField())
 			res = (res > (*i).GetFCost()) ? (*i).GetFCost() : res; 
 	return (res);
 }
@@ -17,6 +17,24 @@ int			find_in_arr(const size_t* arr, const size_t size, const size_t elem)
 		if (arr[i] == elem)
 			return (i);
 	return (-1);
+}
+
+float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool is_unicost) const
+{
+	float		res;
+
+	res = h_cost + g_cost;
+	return (res);
+}
+
+float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool is_unicost, const State& parent) const
+{
+	float		res;
+
+	res = h_cost + g_cost;
+	if (is_unicost)
+		res += (parent.GetFCost() - parent.GetGCost() - 1);
+	return (res);
 }
 
 size_t*		prepareField(const size_t* field, const size_t x, const size_t y, size_t pos, size_t puzzle_len)
@@ -34,25 +52,27 @@ size_t*		prepareField(const size_t* field, const size_t x, const size_t y, size_
 	return (&new_field[0]);
 }
 
-std::vector<NPuzzle::State> 	NPuzzle::State::GetChilds(const size_t puzzle_len) const
+std::vector<NPuzzle::State> 	NPuzzle::State::GetChildren(const size_t puzzle_len, const Solver& solv) const
 {
 	std::vector<State> 		v;
-	size_t					pos = static_cast<size_t>(find_in_arr(this->GetField(), puzzle_len, 0));
+	size_t					pos = static_cast<size_t>(find_in_arr(GetField(), puzzle_len, 0));
 	size_t					x = pos % puzzle_len;
 	size_t					y = pos / puzzle_len;
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		size_t* updated_field = prepareField(this->GetField(), x, y, i, puzzle_len);
+		size_t* updated_field = prepareField(GetField(), x, y, i, puzzle_len);
 		if (updated_field != nullptr)
-			v.push_back(State(updated_field));
+			v.push_back(State(updated_field,
+				calcFCost(solv.calcHeuristic(updated_field), GetGCost() + 1, solv.IsUnicost(), *this),
+				GetGCost() + 1));
 	}
 	return (v);
 }
 
 bool		NPuzzle::State::operator==(const std::pair<size_t*, size_t> final_state) const
 {
-	const size_t* 	field_state = this->GetField();
+	const size_t* 	field_state = GetField();
 	const size_t	field_lenght = (final_state.second * final_state.second);
 	for (size_t i = 0; i < field_lenght; ++i)
 		if (field_state[i] != final_state.first[i])
@@ -64,7 +84,7 @@ bool		NPuzzle::State::operator==(const std::pair<size_t*, size_t> final_state) c
 bool				NPuzzle::State::isInArray(std::vector<State>& v) const
 {
 	for (std::vector<State>::iterator i = v.begin(); i != v.end(); ++i)
-		if (this->GetField() == (*i).GetField())
+		if (GetField() == (*i).GetField())
 			return (true);
 	return (false);
 }

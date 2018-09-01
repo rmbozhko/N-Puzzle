@@ -5,19 +5,22 @@
 
 namespace NPuzzle
 {
+	class Solver;
 	class State
 	{
 	public:
 		State() {}
 		State(size_t* field) : field_(field), f_cost_(0) {};
-		State(size_t* field, size_t f_cost, size_t g_cost) : field_(field), f_cost_(f_cost), g_cost_(g_cost) {};
+		State(size_t* field, float f_cost, size_t g_cost) : field_(field), f_cost_(f_cost), g_cost_(g_cost) {};
 		~State() {};
-		std::vector<State>	GetChilds(const size_t puzzle_len) const;
+		std::vector<State>	GetChildren(const size_t puzzle_len, const Solver& solv) const;
 		const size_t*		GetField() const { return (field_); }
 		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
 		bool				isInArray(std::vector<State>& v) const;
-		size_t				GetFCost() const { return (f_cost_); }
-		void				SetFCost(size_t f_cost) { f_cost_ = f_cost; }
+		float				GetFCost() const { return (f_cost_); }
+		void				SetFCost(float f_cost) { f_cost_ = f_cost; }
+		float				calcFCost(const float h_cost, const size_t g_cost, bool is_unicost) const;
+		float				calcFCost(const float h_cost, const size_t g_cost, bool is_unicost, const State& parent) const;	
 		size_t				findBetterFCost(std::vector<State>& v) const;
 		// void 				SetParent(State& parent) { parent_ = parent; }
 		// State 				GetParent() const { return (parent_); }
@@ -27,7 +30,7 @@ namespace NPuzzle
 
 	private:
 		size_t*		field_;
-		size_t		f_cost_;
+		float		f_cost_;
 		size_t		g_cost_;
 	};
 	static	std::string 		VisitStates(const State& st);
