@@ -5,25 +5,29 @@ float		NPuzzle::Solver::calcHeuristic(const size_t* curr_state) const
 	float		res;
 	HEURISTIC 	func_num;
 
-	func_num = GetHeuristic(); 
+	func_num = GetHeuristic();
 	switch(func_num)
 	{
 		case MANHATTAN:
+			std::cout << "MANHATTAN" << std::endl;
 			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, false);
 			break ;
 		case EUCLIDE:
+			std::cout << "EUCLIDE" << std::endl;
 			res = NPuzzle::Solver::EuclideanDist(GetFinalState().first, curr_state);
 			break ;
 		case MIS_TILES:
+			std::cout << "MIS_TILES" << std::endl;
 			res = NPuzzle::Solver::MisplacedTiles(GetFinalState().first, curr_state);
 			break ;
 		case LIN_CONF:
+			std::cout << "LIN_CONF" << std::endl;
 			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, true);
 			break ;
 		default:
 			throw std::string("Wrong defined heuristic function");
 	}
-
+	std::cout << "res: " << res << std::endl;
 	return (res);
 }
 
@@ -109,12 +113,15 @@ float		NPuzzle::Solver::ManhattanDist(const size_t* final_state, const size_t* c
 		{
 			std::pair<size_t, size_t> goal;	
 			goal = findArrElem(final_state, GetPuzzleSize(), curr_state[i]);
-			dist += std::abs(static_cast<double>((i % GetPuzzleSize()) - goal.first))
-						+ std::abs(static_cast<double>((i / GetPuzzleSize()) - goal.second));
+			dist += std::abs(static_cast<int>((i % GetPuzzleSize()) - goal.first))
+						+ std::abs(static_cast<int>((i / GetPuzzleSize()) - goal.second));
+			// std::cout << "MANHATTAN distance:" << dist << std::endl;		
 		}
 	}
+	std::cout << "MANHATTAN result:" << dist << std::endl;
+	std::cout << "LinearConflict:" << LinearConflict << std::endl;
 	if (LinearConflict)
-		dist += static_cast<float>(ft_add_lin_conf(curr_state, GetPuzzleSize()));
+		dist += static_cast<int>(ft_add_lin_conf(curr_state, GetPuzzleSize()));
 	return (dist);
 }
 
@@ -129,8 +136,8 @@ float		NPuzzle::Solver::MisplacedTiles(const size_t* final_state, const size_t* 
 		{
 			std::pair<size_t, size_t> goal;	
 			goal = findArrElem(final_state, GetPuzzleSize(), curr_state[i]);
-			if (!std::abs(static_cast<double>((i % GetPuzzleSize()) - goal.first))
-					&& !std::abs(static_cast<double>(i / GetPuzzleSize())) - goal.second)
+			if (!std::abs(static_cast<int>((i % GetPuzzleSize()) - goal.first))
+					&& !std::abs(static_cast<int>(i / GetPuzzleSize())) - goal.second)
 				num += 1.0;
 		}
 	}
@@ -142,19 +149,21 @@ float		NPuzzle::Solver::EuclideanDist(const size_t* final_state, const size_t* c
 	float		dist;
 
 	dist = 0;
-	for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()); ++i)
+	for (size_t i = 0; i < (GetPuzzleSize() * GetPuzzleSize()); ++i)
 	{
 		if (curr_state[i] != 0)
 		{
 			std::pair<size_t, size_t> 	goal;
 			float						result;
 
-			goal = findArrElem(final_state, this->GetPuzzleSize(), curr_state[i]);
-			result = std::pow(std::abs(static_cast<double>((i % this->GetPuzzleSize()) - goal.first)), 2.0)
-						+ std::pow(std::abs(static_cast<double>((i / this->GetPuzzleSize()) - goal.second)), 2.0);
+			goal = findArrElem(final_state, GetPuzzleSize(), curr_state[i]);
+			result = std::pow(std::abs(static_cast<int>((i % GetPuzzleSize()) - goal.first)), 2.0)
+						+ std::pow(std::abs(static_cast<int>((i / GetPuzzleSize()) - goal.second)), 2.0);
+			std::cout << "EUCLIDE result: " << result << std::endl;
 			if (result != 0.0)
 				dist += std::sqrt(result);
 		}
 	}
+	std::cout << "EuclideanDist: " << dist << std::endl;
 	return (dist);
 }

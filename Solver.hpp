@@ -23,7 +23,7 @@ namespace NPuzzle
 						: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), heuristic_(heuristic), is_unicost_(is_unicost)
 						{};
 			~Solver() {};
-			bool		SolveWithA(State& start);
+			bool		SolveWithA(State* start);
 			State 		StatesDeepening(State& temp, const size_t threshold) const;
 			State 		SolveWithIDA(State& start) const;
 			bool		CheckIfSolvable(const NPuzzle::State& st) const;
@@ -54,7 +54,7 @@ namespace NPuzzle
 		};
 		
 
-		std::pair<Solver, State> 		ReadData(const char* filename);
+		std::pair<Solver*, State*> 		ReadData(const char* filename);
 }
 
 #endif

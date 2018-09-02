@@ -8,18 +8,19 @@ int 		main(int argc, char const *argv[])
 	{
 		try
 		{
-			std::pair<Solver, State>parsed = ReadData(argv[1]);
-			Solver solv = parsed.first;
-			State st = parsed.second;
-
+			std::pair<Solver*, State*>parsed = ReadData(argv[1]);
+			Solver* solv = parsed.first;
+			State* st = parsed.second;
 			// if (solv.CheckIfSolvable(st))
 			// {
-				if (solv.GetPuzzleSize() == 3) // what to do if len == 2?
-					std::cout << solv.SolveWithA(st) << std::endl;
+				if (solv->GetPuzzleSize() == 3) // what to do if len == 2?
+					std::cout << solv->SolveWithA(st) << std::endl;
 				// else
 					// solv.SolveWithIDA(st);
 			// 	solv.viz_str = NPuzzle::VisitStates(st); // combine states into xdotted string
 			// }
+			delete st;
+			delete solv;
 		}
 		catch (std::string msg)
 		{

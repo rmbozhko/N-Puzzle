@@ -3,11 +3,14 @@
 #include <string>
 #include <regex>
 #include <vector>
-#include <climits>
 #include "Solver.hpp"
 #include "State.hpp"
 #include <cmath>
 #include <limits>
+#include <cstdlib>
 
 namespace NPuzzle {
+	void		ft_print_arr(std::vector<size_t> arr, const size_t len);
+	void		ft_print_arr(const size_t* arr, const size_t len);
+	size_t*		CopyVectorToPtr(std::vector<size_t>& v);
 }

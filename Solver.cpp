@@ -33,17 +33,18 @@ static void		ConstructFinalState(std::vector<std::vector<size_t>>& arr,
 	}
 }
 
-static std::vector<size_t> 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
+static size_t* 	ConvertToVector(std::vector<std::vector<size_t>>& f_state)
 {
-	std::vector<size_t> 		v;
+	size_t* 		v;
 
+	v = new size_t[f_state.size() * f_state.size()];
 	for (size_t i = 0; i < f_state.size(); i++)
 		for (size_t j = 0; j < f_state.size(); j++)
-			v.push_back(f_state[i][j]);
+			v[(i * f_state.size()) + j] = f_state[i][j];
 	return (v);
 }
 
-void		ft_print_arr(std::vector<size_t> arr, const size_t len)
+void		NPuzzle::ft_print_arr(std::vector<size_t> arr, const size_t len)
 {
 	for (size_t i = 0; i < arr.size(); ++i)
 	{
@@ -54,10 +55,12 @@ void		ft_print_arr(std::vector<size_t> arr, const size_t len)
 	std::cout << std::endl;
 }
 
-void		ft_print_arr(const size_t* arr, const size_t len)
+void		NPuzzle::ft_print_arr(const size_t* arr, const size_t len)
 {
 	for (size_t i = 0; i < (len * len); ++i)
 	{
+		if (i && i % len == 0)
+			std::cout << std::endl;
 		std::cout << arr[i] << " ";
 	}
 	std::cout << std::endl;

@@ -14,7 +14,15 @@ namespace NPuzzle
 	   return (s);
 	}
 
-	std::pair<Solver, State> 		ReadData(const char* filename)
+	size_t*		CopyVectorToPtr(std::vector<size_t>& v)
+	{
+		size_t*		field = new size_t [v.size() * v.size()];
+			for (size_t i = 0; i < v.size() * v.size(); ++i)
+				field[i] = v[i];
+		return (field);
+	}
+
+	std::pair<Solver*, State*> 		ReadData(const char* filename)
 	{
 		std::ifstream 				infile(filename);
 		std::string 				line;
@@ -97,10 +105,12 @@ namespace NPuzzle
 		}
 		if (fileField.size() && (fileField.size() == (size * size)) && (std::find(fileField.begin(), fileField.end(), 0) != fileField.end()))
 		{
-			Solver 	solv(size, NPuzzle::Solver::GenerateFinalState(size), "", found, is_unicost);
-			State 	st(static_cast<size_t*>(&fileField[0]));
-			st.SetFCost(st.calcFCost(solv.calcHeuristic(&fileField[0]), 0, is_unicost));
-			st.SetGCost(0);
+			Solver* 	solv = new Solver(size, NPuzzle::Solver::GenerateFinalState(size), "", found, is_unicost);
+			State* 		st = new State(CopyVectorToPtr(fileField));
+			State::SetPuzzleLen(size);
+			ft_print_arr(st->GetField(), State::GetPuzzleLen());
+			st->SetGCost(0);
+			st->SetFCost(st->calcFCost(solv->calcHeuristic(st->GetField()), 0, is_unicost));
 			return (std::make_pair(solv, st));
 		}
 		else

@@ -1,76 +1,92 @@
 #include "NPuzzle.hpp"
 
-bool		NPuzzle::Solver::SolveWithA(State& start)
+bool		NPuzzle::Solver::SolveWithA(State* start)
 {
-	std::vector<State> 	opened;
-	std::vector<State> 	closed;
+	std::vector<State*> 	opened;
+	std::vector<State*> 	closed;
 
 	opened.push_back(start);
-
 	while (!opened.empty())
 	{
-		std::sort(opened.begin(), opened.end(), [](State a, State b) { return (a.GetFCost() < b.GetFCost()); });
-		State		temp = opened.front();
+		std::sort(opened.begin(), opened.end(), [](State* a, State* b) { return (a->GetFCost() < b->GetFCost()); });
+		if (opened.size() == 6)
+		{
+			std::cout << "????????????????????????????" << std::endl;
+			for (std::vector<State*>::iterator i = opened.begin(); i != opened.end(); ++i)
+				std::cout << (*i);
+			exit(0);
+		}
+		State*		temp = opened.front();
 		opened.pop_back();		
 		closed.push_back(temp);
 
-		if (temp == Solver::GetFinalState())
+		if (*temp == Solver::GetFinalState())
 			return (true);
 
-		std::vector<State> 	childs = temp.GetChildren(GetPuzzleSize(), *this);
-		for (State& child : childs)
+		std::vector<State*> 	children = temp->GetChildren(GetPuzzleSize(), *this);
+		std::cout << temp;
+		std::cout << opened.size() << std::endl;
+		std::cout << children.size() << std::endl;
+		for (size_t i = 0; i < children.size(); ++i)
 		{
-			// if (child.isInArray(closed))
+			// if (children[i]->isInArray(closed))
 				// continue ;
 			// if in closed and needed to be renewed we need to extract node from closed_list
-			if (!child.isInArray(opened) && !child.isInArray(closed))
-				opened.push_back(child);	
-			else if (child.isInArray(opened) || child.isInArray(closed))
+			if (!children[i]->isInArray(opened) && !children[i]->isInArray(closed))
+				opened.push_back(children[i]);	
+			else if (children[i]->isInArray(opened) || children[i]->isInArray(closed))
 			{
 				size_t		f_cost;
-				f_cost = child.findBetterFCost(opened);
-				child.SetFCost(child.GetFCost() > f_cost ? f_cost : child.GetFCost());
-				f_cost = child.findBetterFCost(closed);
-				child.SetFCost(child.GetFCost() > f_cost ? f_cost : child.GetFCost());
-				opened.push_back(child);
+				f_cost = children[i]->findBetterFCost(opened);
+				children[i]->SetFCost(children[i]->GetFCost() > f_cost ? f_cost : children[i]->GetFCost());
+				f_cost = children[i]->findBetterFCost(closed);
+				children[i]->SetFCost(children[i]->GetFCost() > f_cost ? f_cost : children[i]->GetFCost());
+				opened.push_back(children[i]);
 			}
-		} 
+		}
+		if (children.size() == 3)
+		{
+			std::cout << "###########################" << std::endl;
+			for (std::vector<State*>::iterator i = opened.begin(); i != opened.end(); ++i)
+				std::cout << (*i);
+			// exit(0);
+		}
 	}
 	return (false);
 }
 
-NPuzzle::State 		NPuzzle::Solver::StatesDeepening(NPuzzle::State& temp, const size_t threshold) const
-{
-	std::vector<NPuzzle::State>		children;
-	float							tempFCost = std::numeric_limits<float>::max();
-	size_t							pos = 0;
+// NPuzzle::State 		NPuzzle::Solver::StatesDeepening(NPuzzle::State& temp, const size_t threshold) const
+// {
+// 	std::vector<NPuzzle::State>		children;
+// 	float							tempFCost = std::numeric_limits<float>::max();
+// 	size_t							pos = 0;
 	
-	if (threshold > temp.GetFCost())
-		return temp;
-	children = temp.GetChildren(GetPuzzleSize(), *this);
-	for (size_t i = 0; i < children.size(); ++i)
-	{
-		StatesDeepening(children[i], threshold);
-		if (children[i].GetFCost() < tempFCost)
-		{
-			tempFCost = children[i].GetFCost();
-			pos = i;
-		}
-	}
-	return (children[pos]);
-}
+// 	if (threshold > temp.GetFCost())
+// 		return temp;
+// 	children = temp.GetChildren(GetPuzzleSize(), *this);
+// 	for (size_t i = 0; i < children.size(); ++i)
+// 	{
+// 		StatesDeepening(children[i], threshold);
+// 		if (children[i].GetFCost() < tempFCost)
+// 		{
+// 			tempFCost = children[i].GetFCost();
+// 			pos = i;
+// 		}
+// 	}
+// 	return (children[pos]);
+// }
 
-NPuzzle::State 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State& start) const
-{
-	NPuzzle::State 		temp;
-	float				threshold;
+// NPuzzle::State 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State& start) const
+// {
+// 	NPuzzle::State 		temp;
+// 	float				threshold;
 
-	threshold = start.GetFCost();
-	while (1)
-	{
-		if (temp == Solver::GetFinalState())
-			return (temp);
-		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
-		threshold = temp.GetFCost();
-	}
-}
+// 	threshold = start.GetFCost();
+// 	while (1)
+// 	{
+// 		if (temp == Solver::GetFinalState())
+// 			return (temp);
+// 		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
+// 		threshold = temp.GetFCost();
+// 	}
+// }
