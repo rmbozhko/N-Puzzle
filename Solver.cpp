@@ -82,13 +82,13 @@ size_t*			 	NPuzzle::Solver::GenerateFinalState(const size_t puzzle_len)
     return (&ConvertToVector(final_state)[0]);
 }
 
-bool		NPuzzle::Solver::CheckIfSolvable(const NPuzzle::State& st) const
+bool		NPuzzle::Solver::CheckIfSolvable(const NPuzzle::State* st) const
 {
 	size_t		inv_count = 0;
 
-    for (size_t i = 0; i < (this->GetPuzzleSize() * this->GetPuzzleSize()) - 1; i++)
-        for (size_t j = i + 1; j < (this->GetPuzzleSize() * this->GetPuzzleSize()); j++)
-        	inv_count += (st.TileAt(j) && st.TileAt(i) &&  st.TileAt(i) > st.TileAt(j)) ? 1 : 0;
+    for (size_t i = 0; i < (GetPuzzleSize() * GetPuzzleSize()) - 1; i++)
+        for (size_t j = i + 1; j < (GetPuzzleSize() * GetPuzzleSize()); j++)
+        	inv_count += (st->TileAt(j) && st->TileAt(i) &&  st->TileAt(i) > st->TileAt(j)) ? 1 : 0;
     if ((inv_count % 2) != 0)
     	throw std::string("Passed puzzle set is unsolvable");
     return (true);

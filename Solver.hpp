@@ -23,10 +23,10 @@ namespace NPuzzle
 						: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), heuristic_(heuristic), is_unicost_(is_unicost)
 						{};
 			~Solver() {};
-			bool		SolveWithA(State* start);
-			State 		StatesDeepening(State& temp, const size_t threshold) const;
-			State 		SolveWithIDA(State& start) const;
-			bool		CheckIfSolvable(const NPuzzle::State& st) const;
+			State*		SolveWithA(State* start);
+			State* 		StatesDeepening(State* temp, const size_t threshold) const;
+			State* 		SolveWithIDA(State* start) const;
+			bool		CheckIfSolvable(const NPuzzle::State* st) const;
 			float		calcHeuristic(const size_t* curr_state) const;
 			float		ManhattanDist(const size_t* final_state, const size_t* curr_state, bool LinearConflict) const;
 			float		EuclideanDist(const size_t* final_state, const size_t* curr_state) const;
@@ -34,10 +34,10 @@ namespace NPuzzle
 			static size_t*		GenerateFinalState(const size_t puzzle_len);
 			const std::pair<size_t*, size_t>		GetFinalState() const { return (std::make_pair(final_state_, this->GetPuzzleSize())); }
 			const size_t		GetPuzzleSize() const { return (puzzle_len_); }
-			const std::string&	GetVisStr() const { return (viz_str_); }
 			HEURISTIC 	GetHeuristic() const { return (heuristic_); }
 			bool		IsUnicost() const { return (is_unicost_); }
-			void			SetVisStr(std::string& viz_str)
+			const std::string&	GetVisStr() const { return (viz_str_); }
+			void			SetVisStr(std::string viz_str)
 			{
 				if (viz_str.size() > 0)
 					viz_str_ += viz_str;

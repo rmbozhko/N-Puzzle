@@ -11,14 +11,27 @@ int 		main(int argc, char const *argv[])
 			std::pair<Solver*, State*>parsed = ReadData(argv[1]);
 			Solver* solv = parsed.first;
 			State* st = parsed.second;
-			// if (solv.CheckIfSolvable(st))
+
+			std::string			filename = "rules/sequence.dot";
+			std::ofstream		file(filename);
+
+			if (!file.is_open())
+				throw std::string("Couldn't open file for visualization");
+
+			// if (solv->CheckIfSolvable(st))
 			// {
-				if (solv->GetPuzzleSize() == 3) // what to do if len == 2?
-					std::cout << solv->SolveWithA(st) << std::endl;
-				// else
-					// solv.SolveWithIDA(st);
-			// 	solv.viz_str = NPuzzle::VisitStates(st); // combine states into xdotted string
+				State* fin_state = (solv->GetPuzzleSize() == 3) ? solv->SolveWithA(st) : solv->SolveWithIDA(st);  
+				if (fin_state)
+					std::cout << "Solved" << std::endl;
+				else
+					std::cout << "Have not found an answer" << std::endl;
+				std::cout << fin_state << std::endl;
+				solv->SetVisStr(VisitStates(fin_state));
 			// }
+			solv->SetVisStr(std::string("}\n"));
+			file << solv->GetVisStr();
+			file.close();
+			
 			delete st;
 			delete solv;
 		}
