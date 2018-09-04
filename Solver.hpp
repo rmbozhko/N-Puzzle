@@ -26,7 +26,7 @@ namespace NPuzzle
 			State*		SolveWithA(State* start);
 			State* 		StatesDeepening(State* temp, const size_t threshold) const;
 			State* 		SolveWithIDA(State* start) const;
-			bool		CheckIfSolvable(const NPuzzle::State* st) const;
+			bool		IsSolvable(const NPuzzle::State* st) const;
 			float		calcHeuristic(const size_t* curr_state) const;
 			float		ManhattanDist(const size_t* final_state, const size_t* curr_state, bool LinearConflict) const;
 			float		EuclideanDist(const size_t* final_state, const size_t* curr_state) const;

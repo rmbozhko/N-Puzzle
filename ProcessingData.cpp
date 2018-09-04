@@ -101,7 +101,6 @@ namespace NPuzzle
 			Solver* 	solv = new Solver(size, NPuzzle::Solver::GenerateFinalState(size), "digraph a {\n", found, is_unicost);
 			State* 		st = new State(CopyVectorToPtr(fileField));
 			State::SetPuzzleLen(size);
-			ft_print_arr(st->GetField(), State::GetPuzzleLen());
 			st->SetGCost(0);
 			st->SetFCost(st->calcFCost(solv->calcHeuristic(st->GetField()), 0, is_unicost));
 			st->SetParent(nullptr);

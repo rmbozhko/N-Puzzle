@@ -18,8 +18,8 @@ int 		main(int argc, char const *argv[])
 			if (!file.is_open())
 				throw std::string("Couldn't open file for visualization");
 
-			// if (solv->CheckIfSolvable(st))
-			// {
+			if (solv->IsSolvable(st))
+			{
 				State* fin_state = (solv->GetPuzzleSize() == 3) ? solv->SolveWithA(st) : solv->SolveWithIDA(st);  
 				if (fin_state)
 					std::cout << "Solved" << std::endl;
@@ -27,7 +27,7 @@ int 		main(int argc, char const *argv[])
 					std::cout << "Have not found an answer" << std::endl;
 				std::cout << fin_state << std::endl;
 				solv->SetVisStr(VisitStates(fin_state));
-			// }
+			}
 			solv->SetVisStr(std::string("}\n"));
 			file << solv->GetVisStr();
 			file.close();
