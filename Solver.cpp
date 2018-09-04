@@ -145,6 +145,8 @@ bool		NPuzzle::Solver::IsSolvable(const NPuzzle::State* st) const
 {
 	const auto 	v = ConvertTo2DVector(st->GetField(), State::GetPuzzleLen());
 	size_t		inv_num = CalcInversions(v, State::GetPuzzleLen());
-	
-	return ((inv_num % 2) ? false : true);
+	if (State::GetPuzzleLen() % 2 == 0)
+		return (((inv_num + (findTile(0) / State::GetPuzzleLen())) % 2 == 1) ? true : false);
+	else
+		return ((inv_num % 2) ? false : true);
  }

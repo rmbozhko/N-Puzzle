@@ -18,10 +18,12 @@ namespace NPuzzle
 		const size_t*		GetField() const { return (field_); }
 		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
 		bool				isInArray(std::vector<State*>& v) const;
+		size_t				findTile(const size_t num) const;
+		State*				GetFromArray(std::vector<State*>& v) const;
 		float				GetFCost() const { return (f_cost_); }
 		void				SetFCost(float f_cost) { f_cost_ = f_cost; }
 		float				calcFCost(const float h_cost, const size_t g_cost, bool is_unicost) const;	
-		size_t				findBetterFCost(std::vector<State*>& v) const;
+		int					findBetterFCost(std::vector<State*>& v) const;
 		void 				SetParent(State* parent) { parent_ = parent; }
 		State* 				GetParent() const { return (parent_); }
 		static size_t		GetPuzzleLen() { return(puzzle_len_); }

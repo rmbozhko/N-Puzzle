@@ -41,23 +41,39 @@ std::string		NPuzzle::VisitStates(State* st)
 	return (res);
 }
 
-size_t		NPuzzle::State::findBetterFCost(std::vector<State*>& v) const
+int		NPuzzle::State::findBetterFCost(std::vector<State*>& v) const
 {
 	size_t		res;
+	int			pos;
 
 	res = UINT_MAX;
-	for (std::vector<State*>::iterator i = v.begin(); i != v.end(); ++i)
-		if (GetField() == (*i)->GetField())
-			res = (res > (*i)->GetFCost()) ? (*i)->GetFCost() : res; 
-	return (res);
+	pos = -1;
+	for (int i = 0; i < v.size(); ++i)
+	{
+		if (GetField() == v[i]->GetField())
+		{
+			if (res > v[i]->GetFCost())
+			{
+				res = v[i]->GetFCost();
+				pos = i;
+			}
+		}
+	}
+	return (pos);
 }
 
-int			find_in_arr(const size_t* arr, const size_t size, const size_t elem)
+size_t				NPuzzle::State::findTile(const size_t num) const
 {
-	for (int i = 0; i < size; ++i)
+	size_t*		arr;
+	size_t		puzzle_len;
+
+	arr = GetField();
+	puzzle_len = State::GetPuzzleLen() * State::GetPuzzleLen();
+	if (num > puzzle_len - 1)
+		throw std::string("Impossible to find passed tile in current field");
+	for (size_t i = 0; i < puzzle_len; ++i)
 		if (arr[i] == elem)
 			return (i);
-	return (-1);
 }
 
 std::ostream&		NPuzzle::operator<<(std::ostream &os, const NPuzzle::State& temp)
@@ -100,10 +116,10 @@ float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool i
 
 size_t*		prepareField(size_t* field, const size_t x, const size_t y, const size_t pos, const size_t puzzle_len)
 {
-	//std::cout << "prepareField|Before" << std::endl;
-	//NPuzzle::ft_print_arr(field, puzzle_len);
-	//std::cout << "X:" << x << "|Y:" << y << "|pos:" << pos << std::endl;
-	//std::cout << "-------------------" << std::endl;
+	std::cout << "prepareField|Before" << std::endl;
+	NPuzzle::ft_print_arr(field, puzzle_len);
+	std::cout << "X:" << x << "|Y:" << y << "|pos:" << pos << std::endl;
+	std::cout << "-------------------" << std::endl;
 	if (pos == 0 && y > 0)
 		std::swap(field[y * puzzle_len + x], field[(y - 1) * puzzle_len + x]);
 	else if (pos == 1 && y < puzzle_len - 1)
@@ -114,32 +130,30 @@ size_t*		prepareField(size_t* field, const size_t x, const size_t y, const size_
 		std::swap(field[y * puzzle_len + x], field[y * puzzle_len + (x + 1)]);
 	else
 		return (nullptr);
-	// std::cout << "prepareField|After" << std::endl;
-	// NPuzzle::ft_print_arr(field, puzzle_len);
-	// std::cout << "---------------------" << std::endl;
+	std::cout << "prepareField|After" << std::endl;
+	NPuzzle::ft_print_arr(field, puzzle_len);
+	std::cout << "---------------------" << std::endl;
 	return (field);
 }
 
 std::vector<NPuzzle::State*> 	NPuzzle::State::GetChildren(const size_t puzzle_len, const Solver& solv)
 {
 	std::vector<State*> 		v;
-	size_t					pos = static_cast<size_t>(find_in_arr(GetField(), puzzle_len, 0));
+	size_t					pos = findTile(0);
 	size_t					x = pos % puzzle_len;
 	size_t					y = pos / puzzle_len;
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		//std::cout << "Child #" << i << std::endl;
+		std::cout << "Child #" << i << std::endl;
 		size_t*		new_field = new size_t[puzzle_len * puzzle_len];
 		for (size_t i = 0; i < puzzle_len * puzzle_len; ++i)
 			new_field[i] = TileAt(i);
 		if (prepareField(new_field, x, y, i, puzzle_len) != nullptr)
 		{
-			//std::cout << "G_COST:" << GetGCost() << std::endl;
 			State* temp = new State(new_field,
 				calcFCost(solv.calcHeuristic(new_field), GetGCost() + 1, solv.IsUnicost()),
 				GetGCost() + 1, this);
-			//std::cout << "F_COST:" << temp->GetFCost() << std::endl;
 			v.push_back(temp);
 		}
 		else
@@ -152,11 +166,18 @@ bool				NPuzzle::State::isInArray(std::vector<State*>& v) const
 {
 	for (std::vector<State*>::iterator i = v.begin(); i != v.end(); ++i)
 	{
-		std::cout << " -- -- - - - - - - - - - - -- " << std::endl;
 		if (*this == (*i)->GetField())
 			return (true);
 	}
 	return (false);
+}
+
+NPuzzle::State*				NPuzzle::State::GetFromArray(std::vector<State*>& v) const
+{
+	for (size_t i = 0; i < v.size(); ++i)
+		if (*this == v[i]->GetField())
+			return (v[i]);
+	return (nullptr);
 }
 
 bool		NPuzzle::State::operator==(const std::pair<size_t*, size_t> final_state) const
@@ -174,7 +195,6 @@ bool		NPuzzle::State::operator==(const size_t* state) const
 {
 	const size_t* 	field_state = GetField();
 	const size_t	field_lenght = (GetPuzzleLen() * GetPuzzleLen());
-	std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% " << std::endl;
 	for (size_t i = 0; i < field_lenght; ++i)
 		if (field_state[i] != state[i])
 			return (false);
