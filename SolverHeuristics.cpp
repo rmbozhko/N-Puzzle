@@ -9,25 +9,25 @@ float		NPuzzle::Solver::calcHeuristic(const size_t* curr_state) const
 	switch(func_num)
 	{
 		case MANHATTAN:
-			std::cout << "MANHATTAN" << std::endl;
+			// std::cout << "MANHATTAN" << std::endl;
 			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, false);
 			break ;
 		case EUCLIDE:
-			std::cout << "EUCLIDE" << std::endl;
+			// std::cout << "EUCLIDE" << std::endl;
 			res = NPuzzle::Solver::EuclideanDist(GetFinalState().first, curr_state);
 			break ;
 		case MIS_TILES:
-			std::cout << "MIS_TILES" << std::endl;
+			// std::cout << "MIS_TILES" << std::endl;
 			res = NPuzzle::Solver::MisplacedTiles(GetFinalState().first, curr_state);
 			break ;
 		case LIN_CONF:
-			std::cout << "LIN_CONF" << std::endl;
+			// std::cout << "LIN_CONF" << std::endl;
 			res = NPuzzle::Solver::ManhattanDist(GetFinalState().first, curr_state, true);
 			break ;
 		default:
 			throw std::string("Wrong defined heuristic function");
 	}
-	std::cout << "res: " << res << std::endl;
+	// std::cout << "res: " << res << std::endl;
 	return (res);
 }
 
@@ -118,8 +118,8 @@ float		NPuzzle::Solver::ManhattanDist(const size_t* final_state, const size_t* c
 			// std::cout << "MANHATTAN distance:" << dist << std::endl;		
 		}
 	}
-	std::cout << "MANHATTAN result:" << dist << std::endl;
-	std::cout << "LinearConflict:" << LinearConflict << std::endl;
+	// std::cout << "MANHATTAN result:" << dist << std::endl;
+	// std::cout << "LinearConflict:" << LinearConflict << std::endl;
 	if (LinearConflict)
 		dist += static_cast<int>(ft_add_lin_conf(curr_state, GetPuzzleSize()));
 	return (dist);
@@ -159,11 +159,11 @@ float		NPuzzle::Solver::EuclideanDist(const size_t* final_state, const size_t* c
 			goal = findArrElem(final_state, GetPuzzleSize(), curr_state[i]);
 			result = std::pow(std::abs(static_cast<int>((i % GetPuzzleSize()) - goal.first)), 2.0)
 						+ std::pow(std::abs(static_cast<int>((i / GetPuzzleSize()) - goal.second)), 2.0);
-			std::cout << "EUCLIDE result: " << result << std::endl;
+			// std::cout << "EUCLIDE result: " << result << std::endl;
 			if (result != 0.0)
 				dist += std::sqrt(result);
 		}
 	}
-	std::cout << "EuclideanDist: " << dist << std::endl;
+	// std::cout << "EuclideanDist: " << dist << std::endl;
 	return (dist);
 }

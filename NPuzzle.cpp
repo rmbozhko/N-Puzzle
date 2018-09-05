@@ -2,6 +2,12 @@
 
 using namespace NPuzzle;
 
+void				FreeStorage(std::vector<NPuzzle::State*>& v)
+{
+	for (int i = 0; i < v.size(); ++i)
+		delete v[i];
+}
+
 int 		main(int argc, char const *argv[])
 {
 	if (argc == 2)
@@ -20,19 +26,25 @@ int 		main(int argc, char const *argv[])
 
 			if (solv->IsSolvable(st))
 			{
-				State* fin_state = (solv->GetPuzzleSize() == 3) ? solv->SolveWithA(st) : solv->SolveWithIDA(st);  
+				std::vector<State*> 	closed;
+				std::vector<State*> 	opened;
+				State* fin_state = (solv->GetPuzzleSize() == 3) ? solv->SolveWithA(st, opened, closed) : solv->SolveWithIDA(st);  
 				if (fin_state)
 					std::cout << "Solved" << std::endl;
 				else
 					std::cout << "Have not found an answer" << std::endl;
 				std::cout << fin_state << std::endl;
 				solv->SetVisStr(VisitStates(fin_state));
+				FreeStorage(opened);
+				FreeStorage(closed);
 			}
+			else
+				std::cerr << "Puzzle is unsolvable" << std::endl;
 			solv->SetVisStr(std::string("}\n"));
 			file << solv->GetVisStr();
 			file.close();
 			
-			delete st;
+			// delete st;
 			delete solv;
 		}
 		catch (std::string msg)

@@ -58,7 +58,6 @@ namespace NPuzzle
 							size = static_cast<size_t>(atoi(m[0].str().c_str()));
 						else
 							throw std::string("Error: Puzzle size overwriting on line #") + std::to_string(i); 
-						std::cout << "PuzzleSize:" << size << std::endl;
 					}
 					else if (std::distance(start, end) == size)
 					{

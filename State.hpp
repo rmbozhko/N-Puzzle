@@ -23,7 +23,7 @@ namespace NPuzzle
 		float				GetFCost() const { return (f_cost_); }
 		void				SetFCost(float f_cost) { f_cost_ = f_cost; }
 		float				calcFCost(const float h_cost, const size_t g_cost, bool is_unicost) const;	
-		int					findBetterFCost(std::vector<State*>& v) const;
+		int					GetDuplicate(std::vector<State*>& v) const;
 		void 				SetParent(State* parent) { parent_ = parent; }
 		State* 				GetParent() const { return (parent_); }
 		static size_t		GetPuzzleLen() { return(puzzle_len_); }
@@ -32,7 +32,7 @@ namespace NPuzzle
 		void				SetGCost(size_t g_cost) { g_cost_ = g_cost; }
 		bool				operator==(const std::pair<size_t*, size_t> final_state) const;
 		bool				operator==(const size_t* state) const;
-
+		State*				operator=(const State* st);
 	private:
 		State*		parent_;		
 		size_t*				field_;

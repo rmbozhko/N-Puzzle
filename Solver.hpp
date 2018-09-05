@@ -23,7 +23,7 @@ namespace NPuzzle
 						: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), heuristic_(heuristic), is_unicost_(is_unicost)
 						{};
 			~Solver() {};
-			State*		SolveWithA(State* start);
+			State*		SolveWithA(State* start, std::vector<State*>& opened, std::vector<State*>& closed);
 			State* 		StatesDeepening(State* temp, const size_t threshold) const;
 			State* 		SolveWithIDA(State* start) const;
 			bool		IsSolvable(const NPuzzle::State* st) const;

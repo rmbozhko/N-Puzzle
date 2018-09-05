@@ -8,7 +8,6 @@
 #include <cmath>
 #include <limits>
 #include <cstdlib>
-#include <iterator>
 
 namespace NPuzzle {
 	void		ft_print_arr(std::vector<size_t> arr, const size_t len);
