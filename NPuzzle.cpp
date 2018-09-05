@@ -18,7 +18,7 @@ int 		main(int argc, char const *argv[])
 			Solver* solv = parsed.first;
 			State* st = parsed.second;
 
-			std::string			filename = "rules/sequence.dot";
+			std::string			filename = "solution.dot";
 			std::ofstream		file(filename);
 
 			if (!file.is_open())

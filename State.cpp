@@ -15,10 +15,10 @@ static int	GetMovedTilePosition(const NPuzzle::State* st, const NPuzzle::State* 
 		const size_t*		parent_field = parent->GetField();
 		int		puzzle_len = NPuzzle::State::GetPuzzleLen() * NPuzzle::State::GetPuzzleLen();
 		for (int i = 0; i < puzzle_len; ++i)
-			if (curr_field[i] != parent_field[i])
+			if ((curr_field[i]) && curr_field[i] != parent_field[i])
 				return (i);
 	}
-	
+
 	return (-1);
 }
 
@@ -34,7 +34,7 @@ std::string		NPuzzle::VisitStates(State* st)
 		res += std::to_string(++id); 
 		res += " [\nshape=plaintext\nlabel=<<table color='black'>\n";
 		const int	moved_tile_pos = GetMovedTilePosition(temp, temp->GetParent());
-		std::cout << moved_tile_pos << std::endl;
+		std::cout << id << " -> " << moved_tile_pos << std::endl;
 		for (size_t i = 0; i < State::GetPuzzleLen() * State::GetPuzzleLen(); ++i)
 		{
 			if (i % State::GetPuzzleLen() == 0)
