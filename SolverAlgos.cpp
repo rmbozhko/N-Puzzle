@@ -25,7 +25,11 @@ NPuzzle::State*		NPuzzle::Solver::SolveWithA(State* start, std::vector<State*>& 
 		{
 			// if in closed and needed to be renewed we need to extract node from closed_list
 			if (!children[i]->isInArray(opened) && !children[i]->isInArray(closed))
+			{
+				IncreaseTotalNumOfStates();
+				SetMaxNumOfStates(opened.size());
 				opened.push_back(children[i]);	
+			}
 			else if (children[i]->isInArray(opened))
 			{
 				int		pos;
@@ -66,8 +70,9 @@ NPuzzle::State* 		NPuzzle::Solver::StatesDeepening(NPuzzle::State* temp, const s
 	float								tempFCost = std::numeric_limits<float>::max();
 	size_t								pos = 0;
 	
-	if (threshold > temp->GetFCost())
+	if (threshold < temp->GetFCost())
 		return temp;
+	// std::cout << temp->GetFCost() << std::endl;
 	children = temp->GetChildren(GetPuzzleSize(), *this);
 	for (size_t i = 0; i < children.size(); ++i)
 	{
@@ -89,9 +94,13 @@ NPuzzle::State* 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State* start) const
 	threshold = start->GetFCost();
 	while (1)
 	{
-		if (*temp == Solver::GetFinalState())
-			return (temp);
+		// std::cout << threshold << std::endl;
+		// std::cout << start << std::endl;
 		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
+		// std::cout << temp << std::endl;
+		if (*(temp) == Solver::GetFinalState())
+			return (temp);
+		// std::cout << "Moving along" << std::endl;
 		threshold = temp->GetFCost();
 	}
 }

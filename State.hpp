@@ -42,7 +42,6 @@ namespace NPuzzle
 	};
 	std::ostream&				operator<<(std::ostream&, const State&);
 	std::ostream&				operator<<(std::ostream &os, const State*);
-	std::string 				VisitStates(State* st);
 }
 
 #endif

@@ -1,5 +1,101 @@
 #include "NPuzzle.hpp"
 
+static void 	HandleCOUT(const NPuzzle::State* temp, int& id, std::string& res, const size_t& len)
+{
+	res += "H-cost: " + std::to_string(static_cast<size_t>(temp->GetFCost() - temp->GetGCost()))
+						+ ", G-Cost: " + std::to_string(temp->GetGCost()) + "\n";
+	for (size_t i = 0; i < len * len; ++i)
+	{
+		res += std::to_string(temp->TileAt(i));
+		res += ((i + 1) % len == 0) ? "\n" : " ";
+	}
+	++id;
+}
+
+static int	GetMovedTilePosition(const NPuzzle::State* st, const NPuzzle::State* parent)
+{
+	if (parent == nullptr)
+		return (-1);
+	else
+	{
+		const size_t*		curr_field = st->GetField();
+		const size_t*		parent_field = parent->GetField();
+		int		puzzle_len = NPuzzle::State::GetPuzzleLen() * NPuzzle::State::GetPuzzleLen();
+		for (int i = 0; i < puzzle_len; ++i)
+			if ((curr_field[i]) && curr_field[i] != parent_field[i])
+				return (i);
+	}
+
+	return (-1);
+}
+
+static void 	HandleXdot(const NPuzzle::State* temp, const size_t* state_field, int& id, std::string& res, const size_t& len)
+{
+	res += std::to_string(++id); 
+	res += " [\nshape=plaintext\nlabel=<<table color='black'>\n";
+	const int	moved_tile_pos = GetMovedTilePosition(temp, temp->GetParent());
+	for (size_t i = 0; i < len * len; ++i)
+	{
+		if (i % len == 0)
+			res += "<tr>";
+		res += "<td ";
+		if (state_field[i] == 0)
+			res += "bgcolor='red'";
+		else if (moved_tile_pos != -1 && i == moved_tile_pos)
+			res += "bgcolor='green'";
+		res += ">" + std::to_string(state_field[i]) + "</td>";
+		if ((i + 1) % len == 0)
+			res += "</tr>\n";
+	}
+	res += "<tr><td colspan='" + std::to_string(static_cast<size_t>(len))
+				+ "'>State's f cost: " + std::to_string(static_cast<size_t>(temp->GetFCost())) + "</td></tr>";
+	res += "</table>>];\n";
+}
+
+void		NPuzzle::Solver::VisitStates(State* st, bool isDot)
+{
+	State*			temp = st;
+	std::string		res;
+	int				id = -1;
+	size_t			len = State::GetPuzzleLen();
+	
+	while (temp != nullptr)
+	{
+		if (isDot)
+			HandleXdot(temp, temp->GetField(), id, res, len);
+		else
+			HandleCOUT(temp, id, res, len);
+		temp = temp->GetParent();
+	}
+	
+	if (isDot)
+	{
+		for (; id > -1; --id)
+		{
+			res += "\n" + std::to_string(id);
+			if (id - 1 > -1)
+				res += "->" + std::to_string(id - 1) + ";";
+			else
+				res += ";\n";
+		}
+		SetVisStr(res);
+		std::ofstream		file("solution.dot");
+		if (!file.is_open())
+			throw std::string("Couldn't open file for visualization");
+		SetVisStr(std::string("}\n"));
+		file << GetVisStr();
+		file.close();
+	}
+	else
+	{
+		res += "Total number of states: " + std::to_string(GetTotalNumOfStates()) + "\n";
+		res += "Max number of states: " + std::to_string(GetMaxNumOfStates()) + "\n";
+		res += "Number of moves: " + std::to_string(id) + "\n";
+		SetVisStr(res);
+		std::cout << GetVisStr();
+	}
+}
+
 static void		ft_handle_square(std::vector<std::vector<size_t>>& arr, size_t row, size_t col, std::vector<size_t>::const_iterator& iter)
 {
 	arr[row][col] = (*iter);
@@ -74,11 +170,11 @@ size_t*			 	NPuzzle::Solver::GenerateFinalState(const size_t puzzle_len)
 
     std::generate(seq.begin(), seq.end(), []() { static size_t i = 1; return (i++); });
     seq[seq.size() - 1] = 0;
-    ft_print_arr(seq, puzzle_len * puzzle_len);
+    // ft_print_arr(seq, puzzle_len * puzzle_len);
     std::vector<size_t>::const_iterator i = seq.begin();
     ConstructState(final_state, 0, 0, puzzle_len, i);
-    for (int i = 0; i < final_state.size(); ++i)
-    	ft_print_arr(final_state[i], puzzle_len);  
+    // for (int i = 0; i < final_state.size(); ++i)
+    	// ft_print_arr(final_state[i], puzzle_len);  
     return (&ConvertToVector(final_state)[0]);
 }
 

@@ -76,19 +76,16 @@ namespace NPuzzle
 						throw std::string("Error: Puzzle data doesn't correspond to size on the line #") + std::to_string(i);
 				}
 			}
-			else if (std::regex_match(line, m, std::regex("^[#].+$"))) // plain line with comments
-				std::cout << "Line of comment: " << m[0].str() << std::endl;
-			else if (std::regex_match(line, m, std::regex("^[ \t\n]*$")) || line[0] == '\n')
-				std::cout << "Line with newlines chars" << std::endl;
 			else if (std::regex_match(line, m, std::regex("^%euclide$")))
 				found = EUCLIDE;
 			else if (std::regex_match(line, m, std::regex("^%lin_conf$")))
 				found = LIN_CONF;
 			else if (std::regex_match(line, m, std::regex("^%mis_tiles$")))
 				found = MIS_TILES;
-			else if (std::regex_match(line, m, std::regex("^%greddy$")))
+			else if (std::regex_match(line, m, std::regex("^%greedy$")))
 				is_unicost = false;
-			else
+			else if (!std::regex_match(line, m, std::regex("^[#].+$"))
+				&& !(std::regex_match(line, m, std::regex("^[ \t\n]*$")) || line[0] == '\n'))
 			{
 				line = std::string("Error: Invalid syntax on line #") + std::to_string(i);
 				throw line;
@@ -97,7 +94,7 @@ namespace NPuzzle
 		}
 		if (fileField.size() && (fileField.size() == (size * size)) && (std::find(fileField.begin(), fileField.end(), 0) != fileField.end()))
 		{
-			Solver* 	solv = new Solver(size, NPuzzle::Solver::GenerateFinalState(size), "digraph a {\n", found, is_unicost);
+			Solver* 	solv = new Solver(size, NPuzzle::Solver::GenerateFinalState(size), "", found, is_unicost);
 			State* 		st = new State(CopyVectorToPtr(fileField));
 			State::SetPuzzleLen(size);
 			st->SetGCost(0);

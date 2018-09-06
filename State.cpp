@@ -5,66 +5,6 @@ NPuzzle::State::~State()
 	delete[] field_; 
 }
 
-static int	GetMovedTilePosition(const NPuzzle::State* st, const NPuzzle::State* parent)
-{
-	if (parent == nullptr)
-		return (-1);
-	else
-	{
-		const size_t*		curr_field = st->GetField();
-		const size_t*		parent_field = parent->GetField();
-		int		puzzle_len = NPuzzle::State::GetPuzzleLen() * NPuzzle::State::GetPuzzleLen();
-		for (int i = 0; i < puzzle_len; ++i)
-			if ((curr_field[i]) && curr_field[i] != parent_field[i])
-				return (i);
-	}
-
-	return (-1);
-}
-
-std::string		NPuzzle::VisitStates(State* st)
-{
-	State*			temp = st;
-	std::string		res;
-	int				id = -1;
-
-	while (temp != nullptr)
-	{
-		const size_t*	state_field = temp->GetField();
-		res += std::to_string(++id); 
-		res += " [\nshape=plaintext\nlabel=<<table color='black'>\n";
-		const int	moved_tile_pos = GetMovedTilePosition(temp, temp->GetParent());
-		std::cout << id << " -> " << moved_tile_pos << std::endl;
-		for (size_t i = 0; i < State::GetPuzzleLen() * State::GetPuzzleLen(); ++i)
-		{
-			if (i % State::GetPuzzleLen() == 0)
-				res += "<tr>";
-			res += "<td ";
-			if (state_field[i] == 0)
-				res += "bgcolor='red'";
-			else if (moved_tile_pos != -1 && i == moved_tile_pos)
-				res += "bgcolor='green'";
-			res += ">" + std::to_string(state_field[i]) + "</td>";
-			if ((i + 1) % State::GetPuzzleLen() == 0)
-				res += "</tr>\n";
-		}
-		res += "<tr><td colspan='" + std::to_string(static_cast<size_t>(State::GetPuzzleLen()))
-				+ "'>State's f cost: " + std::to_string(static_cast<size_t>(temp->GetFCost())) + "</td></tr>";
-		res += "</table>>];\n";
-		temp = temp->GetParent();
-	}
-	for (; id > -1; --id)
-	{
-		res += "\n" + std::to_string(id);
-		if (id - 1 > -1)
-			res += "->" + std::to_string(id - 1) + ";";
-		else
-			res += ";\n";
-	}
-	std::cout << "res: " << res << std::endl;
-	return (res);
-}
-
 int		NPuzzle::State::GetDuplicate(std::vector<State*>& v) const
 {
 	for (int i = 0; i < v.size(); ++i)
