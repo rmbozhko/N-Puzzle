@@ -227,7 +227,7 @@ static size_t	CalcInversions(const std::vector<std::vector<size_t>>& arr, const 
 	size_t				inv_count = 0;
 
 	GetCurrStateAsSnail(arr, 0, 0, len, v);
-	for (size_t i = 0; i < (len * len) - 1; i++)
+	for (size_t i = 0; i < (len * len); i++)
 	{
         for (size_t j = i + 1; j < (len * len); j++)
         {
@@ -239,10 +239,9 @@ static size_t	CalcInversions(const std::vector<std::vector<size_t>>& arr, const 
 
 bool		NPuzzle::Solver::IsSolvable(const NPuzzle::State* st) const
 {
-	const auto 	v = ConvertTo2DVector(st->GetField(), State::GetPuzzleLen());
-	size_t		inv_num = CalcInversions(v, State::GetPuzzleLen());
-	if (State::GetPuzzleLen() % 2 == 0)
-		return (((inv_num + (st->findTile(0) / State::GetPuzzleLen())) % 2 == 1) ? true : false);
-	else
-		return ((inv_num % 2) ? false : true);
+	size_t const		len = State::GetPuzzleLen();
+	auto const			v = ConvertTo2DVector(st->GetField(), len);
+	size_t const		inv_num = CalcInversions(v, len);
+	
+	return (((inv_num % 2) == 0) ? true : false);
  }
