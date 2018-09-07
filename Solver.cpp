@@ -1,14 +1,18 @@
 #include "NPuzzle.hpp"
 
-static void 	HandleCOUT(const NPuzzle::State* temp, int& id, std::string& res, const size_t& len)
+static void 	HandleCOUT(const NPuzzle::State* temp, int& id, const size_t& len)
 {
-	res += "H-cost: " + std::to_string(static_cast<size_t>(temp->GetFCost() - temp->GetGCost()))
-						+ ", G-Cost: " + std::to_string(temp->GetGCost()) + "\n";
+	std::cout << "H-cost: " << (static_cast<size_t>(temp->GetFCost() - temp->GetGCost()))
+						<< ", G-Cost: " << temp->GetGCost() << "\n\t";
 	for (size_t i = 0; i < len * len; ++i)
 	{
-		res += std::to_string(temp->TileAt(i));
-		res += ((i + 1) % len == 0) ? "\n" : " ";
+		if (temp->TileAt(i) == 0)
+			std::cout << "\033[1;31m" << temp->TileAt(i) << "\033[0m"; 
+		else
+			std::cout << temp->TileAt(i);
+		std::cout << (((i + 1) % len == 0) ? "\n\t" : " ");
 	}
+	std::cout << std::endl;
 	++id;
 }
 
@@ -64,7 +68,7 @@ void		NPuzzle::Solver::VisitStates(State* st, bool isDot)
 		if (isDot)
 			HandleXdot(temp, temp->GetField(), id, res, len);
 		else
-			HandleCOUT(temp, id, res, len);
+			HandleCOUT(temp, id, len);
 		temp = temp->GetParent();
 	}
 	
@@ -88,11 +92,9 @@ void		NPuzzle::Solver::VisitStates(State* st, bool isDot)
 	}
 	else
 	{
-		res += "Total number of states: " + std::to_string(GetTotalNumOfStates()) + "\n";
-		res += "Max number of states: " + std::to_string(GetMaxNumOfStates()) + "\n";
-		res += "Number of moves: " + std::to_string(id) + "\n";
-		SetVisStr(res);
-		std::cout << GetVisStr();
+		std::cout << "Total number of states: "  << GetTotalNumOfStates() << std::endl;
+		std::cout << "Max number of states: " << GetMaxNumOfStates() << std::endl;
+		std::cout << "Number of moves: " << id << std::endl;
 	}
 }
 
