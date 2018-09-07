@@ -16,18 +16,22 @@ static void 	HandleCOUT(const NPuzzle::State* temp, int& id, const size_t& len)
 	++id;
 }
 
-static int	GetMovedTilePosition(const NPuzzle::State* st, const NPuzzle::State* parent)
+static int	GetMovedTilePosition(const NPuzzle::State* const st, const NPuzzle::State* const parent)
 {
-	if (parent == nullptr)
+	if (parent == nullptr) {
 		return (-1);
+	}
 	else
 	{
 		const size_t*		curr_field = st->GetField();
 		const size_t*		parent_field = parent->GetField();
-		int		puzzle_len = NPuzzle::State::GetPuzzleLen() * NPuzzle::State::GetPuzzleLen();
-		for (int i = 0; i < puzzle_len; ++i)
-			if ((curr_field[i]) && curr_field[i] != parent_field[i])
+		const int		 	puzzle_len = NPuzzle::State::GetPuzzleLen() * NPuzzle::State::GetPuzzleLen();
+		
+		for (int i = 0; i < puzzle_len; ++i) {
+			if ((curr_field[i]) && curr_field[i] != parent_field[i]) {
 				return (i);
+			}
+		}
 	}
 
 	return (-1);

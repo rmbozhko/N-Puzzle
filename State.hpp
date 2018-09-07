@@ -42,6 +42,7 @@ namespace NPuzzle
 	};
 	std::ostream&				operator<<(std::ostream&, const State&);
 	std::ostream&				operator<<(std::ostream &os, const State*);
+	size_t*						prepareField(size_t* field, const size_t x, const size_t y, const size_t pos, const size_t puzzle_len);
 }
 
 #endif

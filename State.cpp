@@ -74,7 +74,7 @@ float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool i
 	return (res);
 }
 
-size_t*		prepareField(size_t* field, const size_t x, const size_t y, const size_t pos, const size_t puzzle_len)
+size_t*		NPuzzle::prepareField(size_t* field, const size_t x, const size_t y, const size_t pos, const size_t puzzle_len)
 {
 	// std::cout << "prepareField|Before" << std::endl;
 	// NPuzzle::ft_print_arr(field, puzzle_len);
