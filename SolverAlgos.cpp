@@ -69,38 +69,56 @@ NPuzzle::State* 		NPuzzle::Solver::StatesDeepening(NPuzzle::State* temp, const s
 	std::vector<NPuzzle::State*>		children;
 	float								tempFCost = std::numeric_limits<float>::max();
 	size_t								pos = 0;
-	
-	if (threshold < temp->GetFCost())
+
+	if (threshold < temp->GetFCost() || *(temp) == Solver::GetFinalState())
+	{
+		// if (*(temp) == Solver::GetFinalState())
+			// std::cout << "@@@@@@@@@@@@Found\n" << temp << std::endl;	
 		return temp;
-	// std::cout << temp->GetFCost() << std::endl;
+	}
+	// std::cout << "?????????? Next node\n" << temp << std::endl;
 	children = temp->GetChildren(GetPuzzleSize(), *this);
 	for (size_t i = 0; i < children.size(); ++i)
 	{
-		StatesDeepening(children[i], threshold);
+		// std::cout << "---------------" << std::endl;
+		// std::cout << children[i] << std::endl;
+		// std::cout << "###############" << std::endl;
+		State*		st = StatesDeepening(children[i], threshold);
+		if (*(st) == Solver::GetFinalState())
+		{
+			// std::cout << "$$$$$$$$$$$$$$$$$$$$$Found\n" << st << std::endl;
+			return (st);//(children[i]);
+		}
 		if (children[i]->GetFCost() < tempFCost)
 		{
+			// std::cout << "Cost is less for child #" << i << std::endl << children[i];
 			tempFCost = children[i]->GetFCost();
 			pos = i;
 		}
 	}
+	// std::cout << "Choosed child #" << pos << std::endl << children[pos];
 	return (children[pos]);
 }
 
-NPuzzle::State* 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State* start) const
+NPuzzle::State* 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State* start)
 {
 	NPuzzle::State* 		temp;
 	float					threshold;
 
 	threshold = start->GetFCost();
+	SetUnicostMode(false);
+	if (*(start) == Solver::GetFinalState())
+			return (start);
 	while (1)
 	{
 		// std::cout << threshold << std::endl;
-		// std::cout << start << std::endl;
+		// std::cout << "Start:\n" << start << std::endl;
 		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
-		// std::cout << temp << std::endl;
 		if (*(temp) == Solver::GetFinalState())
 			return (temp);
 		// std::cout << "Moving along" << std::endl;
 		threshold = temp->GetFCost();
+		// if (threshold )
+			// exit(0);
 	}
 }

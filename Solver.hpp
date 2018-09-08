@@ -25,7 +25,7 @@ namespace NPuzzle
 			~Solver() {};
 			State*		SolveWithA(State* start, std::vector<State*>& opened, std::vector<State*>& closed);
 			State* 		StatesDeepening(State* temp, const size_t threshold) const;
-			State* 		SolveWithIDA(State* start) const;
+			State* 		SolveWithIDA(State* start);
 			bool		IsSolvable(const NPuzzle::State* st) const;
 			float		calcHeuristic(const size_t* curr_state) const;
 			float		ManhattanDist(const size_t* final_state, const size_t* curr_state, bool LinearConflict) const;
@@ -36,6 +36,7 @@ namespace NPuzzle
 			const size_t		GetPuzzleSize() const { return (puzzle_len_); }
 			HEURISTIC 	GetHeuristic() const { return (heuristic_); }
 			bool		IsUnicost() const { return (is_unicost_); }
+			void		SetUnicostMode(bool IsUnicost=true) { is_unicost_ = IsUnicost; }
 			const std::string&	GetVisStr() const { return (viz_str_); }
 			void			SetVisStr(std::string viz_str)
 			{
