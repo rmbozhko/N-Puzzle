@@ -42,23 +42,32 @@ public class Puzzle : MonoBehaviour {
         return defaultValue;
     }
 
-	Texture2D	GetImage(string url)
+	IEnumerator	GetImage(string url)
 	{
-		if (url != null)
+		if (url == null)
 			Debug.Log("No value found for -img flag");
 		WWW www = new WWW(url);
-		if (www.isDone && !string.IsNullOrEmpty(www.error))
-               Debug.Log(www.error);
-        return (www.texture);
+		while (!www.isDone /*|| string.IsNullOrEmpty(www.error)*/)
+		{
+        	Debug.Log("Loading...");
+			yield return new WaitForSeconds(1f);
+		}
+		image = (www.texture);
+//        Debug.Log(www.error);
 	}
 
-	void		Start()
+	IEnumerator		Start()
 	{
 		args = System.Environment.GetCommandLineArgs().ToList();
-		image = GetImage(GetArg("-img", null));
-		blocksPerLine = Convert.ToInt16(GetArg("-p_size", null));
+		string url = "https://cdn.intra.42.fr/users/kyefremo.jpg";
+		yield return (StartCoroutine(GetImage(url)));//GetArg("-img", null));
+		if (GetArg("-p_size", null) != null)
+			blocksPerLine = Convert.ToInt16(GetArg("-p_size", null));
 		if (blocksPerLine > 0)
+		{
 			CreatePuzzle ();
+			StartShuffle ();
+		}
 		else
 			Debug.Log("Puzzle size cannot be negative");
 	}
@@ -95,7 +104,10 @@ public class Puzzle : MonoBehaviour {
 
 				// setting emptyBlock 
 				if (y == 0 && x == blocksPerLine - 1)
+				{
 					emptyBlock = block;
+					// emptyBlock.GetComponent<MeshRenderer>().enabled = false;
+				}
 			}
 		}
 
@@ -200,5 +212,23 @@ public class Puzzle : MonoBehaviour {
 		// if player solves image, then the empty block appears with pixels of image on it
 		state = PuzzleState.Solved;
 		emptyBlock.gameObject.SetActive (true);
+		StartCoroutine(Fade(1f));
+
+	}
+	IEnumerator Fade(float sec)
+	{
+		float t = 0f;
+
+		while (t < sec)
+		{
+			t += Time.deltaTime;
+
+			foreach (Block block in blocks)
+			{
+				Color tmp = block.GetComponent<MeshRenderer>().material.color;
+				block.GetComponent<MeshRenderer>().material.color = new Color(tmp.r,tmp.g,tmp.b, t/sec);
+			}
+			yield return new WaitForEndOfFrame();
+		}
 	}
 }
