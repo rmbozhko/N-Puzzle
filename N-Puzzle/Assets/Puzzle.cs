@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
 /* Setting project:
  * 0. Create GameObject, top left window
  * 1. Assign Puzzle.cs to GameObject
@@ -45,14 +45,11 @@ public class Puzzle : MonoBehaviour {
 	Texture2D	GetImage(string url)
 	{
 		if (url != null)
-		{
-			WWW www = new WWW(url);
-			if (www.isDone && !string.IsNullOrEmpty(www.error))
-	               Debug.Log(www.error);
-			image = www.texture;
-		}
-		else
 			Debug.Log("No value found for -img flag");
+		WWW www = new WWW(url);
+		if (www.isDone && !string.IsNullOrEmpty(www.error))
+               Debug.Log(www.error);
+        return (www.texture);
 	}
 
 	void		Start()
@@ -135,7 +132,7 @@ public class Puzzle : MonoBehaviour {
 
 			Vector2	targetPosition = emptyBlock.transform.position;
 			emptyBlock.transform.position = blockToMove.transform.position;
-			blockToMove.MoveToPosition[targetPosition, duration];
+			blockToMove.MoveToPosition(targetPosition, duration);
 			blockIsMoving = true;
 		}
 	}
@@ -172,7 +169,7 @@ public class Puzzle : MonoBehaviour {
 		// setting blocks-neighbours
 		Vector2Int[] offsets = { new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1)};
 		// selecting random neighbour
-		int		randIndex = Random.Range(0, offsets.Length);
+		int		randIndex = UnityEngine.Random.Range(0, offsets.Length);
 		for (int i = 0; i < offsets.Length; i++) {
 			// if we won't succeed with randIndex, then we sum it with 'i', and apply modul in order to stay in bounds
 			Vector2Int	offset = offsets [(randIndex + i) % offsets.Length];
@@ -197,7 +194,7 @@ public class Puzzle : MonoBehaviour {
 	void		CheckIfSolved()
 	{
 		foreach (Block block in blocks) {
-			if (!block.IsAtStartingCoord)
+			if (!block.IsAtStartingCoord())
 				return ;
 		}
 		// if player solves image, then the empty block appears with pixels of image on it

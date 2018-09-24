@@ -17,7 +17,7 @@ public class Block : MonoBehaviour {
 		coord = startingCoord;
 		// get rid of all lights for the scene
 		// Unity wouldn't find Unlit/Texture by itself, that is why we explicitly gives it shader in Resources folder
-		GetComponent<MeshRenderer> ().material.shader = Resources.Load<Material>("Block");
+		GetComponent<MeshRenderer> ().material = Resources.Load<Material>("Block");
 		GetComponent<MeshRenderer> ().material.mainTexture = image;
 	}
 
