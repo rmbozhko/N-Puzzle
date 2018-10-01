@@ -33,6 +33,8 @@ namespace NPuzzle
 		bool				operator==(const std::pair<size_t*, size_t> final_state) const;
 		bool				operator==(const size_t* state) const;
 		State*				operator=(const State* st);
+		size_t				GetHCost() const { return (f_cost_ - g_cost_); }
+		
 	private:
 		State*		parent_;		
 		size_t*				field_;

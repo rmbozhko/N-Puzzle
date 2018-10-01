@@ -16,6 +16,8 @@ $(NAME) : $(OBJ) $(HEADERS)
 	@$(CC) $(CFLAGS) $<
 
 clean:
+	@rm -f *.dot
+	@rm -f *.png
 	@rm -rf $(OBJ)
 
 fclean: clean

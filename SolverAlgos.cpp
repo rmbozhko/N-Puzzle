@@ -5,7 +5,7 @@ NPuzzle::State*		NPuzzle::Solver::SolveWithA(State* start, std::vector<State*>& 
 	// std::vector<State*> 	opened;
 	// std::vector<State*> 	closed;
 
-	opened.push_back(start);
+	// opened.push_back(start);
 	while (!opened.empty())
 	{
 		std::sort(opened.begin(), opened.end(), [](State* a, State* b) { return (a->GetFCost() < b->GetFCost()); });
