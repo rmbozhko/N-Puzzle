@@ -11,11 +11,11 @@ namespace NPuzzle
 	public:
 		State() {}
 		State(size_t* field) : field_(field), f_cost_(0) {};
-		State(size_t* field, float f_cost, size_t g_cost, State* parent)
-				: field_(field), f_cost_(f_cost), g_cost_(g_cost), parent_(parent) {};
+		State(size_t* field, float f_cost, size_t g_cost)
+				: field_(field), f_cost_(f_cost), g_cost_(g_cost) {};
 		~State();
 		std::vector<State*>	GetChildren(const size_t puzzle_len, const Solver& solv);
-		const size_t*		GetField() const { return (field_); }
+		size_t*				GetField() const { return (field_); }
 		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
 		bool				isInArray(std::vector<State*>& v) const;
 		size_t				findTile(const size_t num) const;

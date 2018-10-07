@@ -4,7 +4,7 @@ using namespace NPuzzle;
 
 void				printUsage()
 {
-	std::cout << "Usage: ./n_puzzle [-dot, -s, -i, -h] puzzle_file.txt" << std::endl;
+	std::cout << "Usage: ./n_puzzle [-dot, -s, -i, -h] -f puzzle_file.txt" << std::endl;
 	std::cout << "\t-dot - generating dot file with steps passed to solution state" << std::endl;
 	std::cout << "\t-s - (min: 2, max: 100, default: 3): size for a random generated puzzle" << std::endl;
 	std::cout << "\t-i - (default: 1000): number of iterations for a random generated puzzle" << std::endl;
@@ -177,6 +177,7 @@ int 		main(int argc, char const *argv[])
 	try
 	{
 		HandleCmdArgs(argc, argv);
+		while (1);
 	}
 	catch (std::string msg)
 	{

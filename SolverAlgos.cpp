@@ -71,10 +71,11 @@ NPuzzle::State* 		NPuzzle::Solver::StatesDeepening(NPuzzle::State* temp, const s
 	State*								stmt;
 	State*								st;
 
+	// std::cout << "Passed temp:\n" << temp << "+++++++++++++" << std::endl;
 	if (threshold < temp->GetFCost() || *(temp) == Solver::GetFinalState()) {
 		return temp;
 	}
-
+	// std::cout << "Yo" << std::endl;
 	children = temp->GetChildren(GetPuzzleSize(), *this);
 	
 	for (size_t i = 0; i < children.size(); ++i) {
@@ -90,22 +91,39 @@ NPuzzle::State* 		NPuzzle::Solver::StatesDeepening(NPuzzle::State* temp, const s
 			stmt = st;
 		}
 	}
+	for (size_t i = 0; i < children.size(); ++i) {
+		if (!(children[i] == stmt))
+			delete children[i];
+	}
 	return (stmt);
 }
 
 NPuzzle::State* 		NPuzzle::Solver::SolveWithIDA(NPuzzle::State* start)
 {
 	NPuzzle::State* 		temp;
+	NPuzzle::State*			d_ptr;
 	float					threshold;
 
 	threshold = start->GetFCost();
+	temp = nullptr;
+	d_ptr = nullptr;
 	if (*(start) == Solver::GetFinalState())
 			return (start);
+	// std::cout << start << std::endl;
 	while (1)
 	{
+		// std::cout << "THRESHOLD: " << threshold << std::endl;
 		temp = NPuzzle::Solver::StatesDeepening(start, threshold);
+		if (d_ptr && !(d_ptr == temp))
+			delete d_ptr;
+		d_ptr = temp;
+		// std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n" << temp << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n";
 		if (*(temp) == Solver::GetFinalState())
+		{
+			while (1);
 			return (temp);
+		}
 		threshold = temp->GetFCost();
 	}
+	while (1);
 }

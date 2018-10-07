@@ -113,7 +113,8 @@ std::vector<NPuzzle::State*> 	NPuzzle::State::GetChildren(const size_t puzzle_le
 		{
 			State* temp = new State(new_field,
 				calcFCost(solv.calcHeuristic(new_field), GetGCost() + 1, solv.IsUnicost()),
-				GetGCost() + 1, this);
+				GetGCost() + 1);
+			temp->SetParent(this);
 			v.push_back(temp);
 		}
 		else
@@ -158,6 +159,10 @@ NPuzzle::State*		NPuzzle::State::operator=(const State* st)
 	SetFCost(st->GetFCost());
 	SetGCost(st->GetGCost());
 	SetParent(st->GetParent());
+	// State*	temp = new State(st->GetParent()->GetField(),
+								// st->GetParent()->GetFCost(),
+								// st->GetParent()->GetGCost());
+	// SetParent(temp);
 	return (this);
 }
 

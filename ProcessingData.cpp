@@ -73,7 +73,7 @@ namespace NPuzzle
 						}
 					}
 					else
-						hrow std::string("Error: Puzzle data doesn't correspond to size on the line #") + std::to_string(i);
+						throw std::string("Error: Puzzle data doesn't correspond to size on the line #") + std::to_string(i);
 				}
 			}
 			else if (std::regex_match(line, m, std::regex("^%euclide$")))
