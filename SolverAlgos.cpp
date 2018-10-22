@@ -6,10 +6,6 @@ NPuzzle::State*				copyState(NPuzzle::State* st);
 
 NPuzzle::State*		NPuzzle::Solver::SolveWithA(std::vector<State*>& opened, std::vector<State*>& closed)
 {
-	// std::vector<State*> 	opened;
-	// std::vector<State*> 	closed;
-
-	// opened.push_back(start);
 	while (!opened.empty())
 	{
 		std::sort(opened.begin(), opened.end(), [](State* a, State* b) { return (a->GetFCost() < b->GetFCost()); });
@@ -17,10 +13,6 @@ NPuzzle::State*		NPuzzle::Solver::SolveWithA(std::vector<State*>& opened, std::v
 
 		if (*temp == Solver::GetFinalState())
 		{
-			// FreeStorage(opened);
-			// FreeStorage(closed);
-			// while (1);
-			std::cout << "Here" << std::endl;
 			return (temp);
 		}
 		opened.erase(opened.begin());
@@ -29,12 +21,11 @@ NPuzzle::State*		NPuzzle::Solver::SolveWithA(std::vector<State*>& opened, std::v
 		std::vector<State*> 	children = temp->GetChildren(GetPuzzleSize(), *this);
 		for (size_t i = 0; i < children.size(); ++i)
 		{
-			// if in closed and needed to be renewed we need to extract node from closed_list
 			if (!children[i]->isInArray(opened) && !children[i]->isInArray(closed))
 			{
 				IncreaseTotalNumOfStates();
 				SetMaxNumOfStates(opened.size());
-				opened.push_back(copyState(children[i]));	
+				opened.push_back(copyState(children[i]));
 			}
 			else if (children[i]->isInArray(opened))
 			{
@@ -56,7 +47,7 @@ NPuzzle::State*		NPuzzle::Solver::SolveWithA(std::vector<State*>& opened, std::v
 				pos = children[i]->GetDuplicate(opened);
 				if (pos != -1)
 				{
-					if (children[i]->GetFCost() > opened[pos]->GetFCost())
+ 					if (children[i]->GetFCost() < opened[pos]->GetFCost())
 					{
 						*(children[i]) = opened[pos];
 						opened.push_back(copyState(children[i]));

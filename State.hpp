@@ -11,12 +11,13 @@ namespace NPuzzle
 	public:
 		State() {}
 		State(size_t* field) : field_(field), f_cost_(0) {};
-		State(size_t* field, float f_cost, size_t g_cost)
-				: field_(field), f_cost_(f_cost), g_cost_(g_cost) {};
+		State(size_t* field, float f_cost, size_t g_cost, State* parent)
+				: field_(field), f_cost_(f_cost), g_cost_(g_cost), parent_(parent) {};
 		~State();
 		std::vector<State*>	GetChildren(const size_t puzzle_len, const Solver& solv);
+		void				SetField(size_t* field) { field_ = field; }
 		size_t*				GetField() const { return (field_); }
-		const size_t		TileAt(const size_t pos) const { return (field_[pos]); }
+		size_t				TileAt(const size_t pos) const { return (field_[pos]); }
 		bool				isInArray(std::vector<State*>& v) const;
 		size_t				findTile(const size_t num) const;
 		State*				GetFromArray(std::vector<State*>& v) const;
@@ -35,12 +36,12 @@ namespace NPuzzle
 		State*				operator=(const State* st);
 		size_t				GetHCost() const { return (f_cost_ - g_cost_); }
 		
-	private:
-		State*		parent_;		
+	private:		
 		size_t*				field_;
 		float				f_cost_;
 		size_t				g_cost_;
 		static size_t		puzzle_len_;
+		State*				parent_;
 	};
 	std::ostream&				operator<<(std::ostream&, const State&);
 	std::ostream&				operator<<(std::ostream &os, const State*);

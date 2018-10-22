@@ -22,10 +22,8 @@ namespace NPuzzle
 			Solver(size_t puzzle_len=0, size_t* final_state=nullptr, std::string viz_str="", HEURISTIC heuristic=MANHATTAN, bool is_unicost=true, size_t maxNumOfStates=0, size_t totalNumOfStates_=0)
 						: puzzle_len_(puzzle_len), final_state_(final_state), viz_str_(viz_str), heuristic_(heuristic), is_unicost_(is_unicost), maxNumOfStates_(maxNumOfStates), totalNumOfStates_(totalNumOfStates_)
 						{};
-			~Solver() {};
-			State*		SolveWithA(State* start, std::vector<State*>& opened, std::vector<State*>& closed);
-			State* 		StatesDeepening(State* temp, const size_t threshold) const;
-			State* 		SolveWithIDA(State* start);
+			~Solver();
+			State*		SolveWithA(std::vector<State*>& opened, std::vector<State*>& closed);
 			bool		IsSolvable(const NPuzzle::State* st) const;
 			float		calcHeuristic(const size_t* curr_state) const;
 			float		ManhattanDist(const size_t* final_state, const size_t* curr_state, bool LinearConflict) const;
@@ -33,7 +31,7 @@ namespace NPuzzle
 			float		MisplacedTiles(const size_t* final_state, const size_t* curr_state) const;
 			static size_t*		GenerateFinalState(const size_t puzzle_len);
 			const std::pair<size_t*, size_t>		GetFinalState() const { return (std::make_pair(final_state_, this->GetPuzzleSize())); }
-			const size_t		GetPuzzleSize() const { return (puzzle_len_); }
+			size_t		GetPuzzleSize() const { return (puzzle_len_); }
 			HEURISTIC 	GetHeuristic() const { return (heuristic_); }
 			bool		IsUnicost() const { return (is_unicost_); }
 			void		SetUnicostMode(bool IsUnicost=true) { is_unicost_ = IsUnicost; }

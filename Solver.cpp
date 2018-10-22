@@ -1,5 +1,10 @@
 #include "NPuzzle.hpp"
 
+NPuzzle::Solver::~Solver()
+{
+	delete[] final_state_;
+}
+
 static void 	HandleCOUT(const NPuzzle::State* temp, int& id, const size_t& len)
 {
 	std::cout << "H-cost: " << (static_cast<size_t>(temp->GetFCost() - temp->GetGCost()))
@@ -49,7 +54,7 @@ static void 	HandleXdot(const NPuzzle::State* temp, const size_t* state_field, i
 		res += "<td ";
 		if (state_field[i] == 0)
 			res += "bgcolor='red'";
-		else if (moved_tile_pos != -1 && i == moved_tile_pos)
+		else if (moved_tile_pos != -1 && i == static_cast<size_t>(moved_tile_pos))
 			res += "bgcolor='green'";
 		res += ">" + std::to_string(state_field[i]) + "</td>";
 		if ((i + 1) % len == 0)
@@ -176,11 +181,8 @@ size_t*			 	NPuzzle::Solver::GenerateFinalState(const size_t puzzle_len)
 
     std::generate(seq.begin(), seq.end(), []() { static size_t i = 1; return (i++); });
     seq[seq.size() - 1] = 0;
-    // ft_print_arr(seq, puzzle_len * puzzle_len);
     std::vector<size_t>::const_iterator i = seq.begin();
     ConstructState(final_state, 0, 0, puzzle_len, i);
-    // for (int i = 0; i < final_state.size(); ++i)
-    	// ft_print_arr(final_state[i], puzzle_len);  
     return (&ConvertToVector(final_state)[0]);
 }
 

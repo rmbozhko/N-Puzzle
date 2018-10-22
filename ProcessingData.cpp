@@ -29,11 +29,9 @@ namespace NPuzzle
 		size_t						i;
 		std::smatch					m;
 		HEURISTIC					found = MANHATTAN;
-		bool						is_unicost = true;
-		
+		bool						is_unicost = true;		
 		std::vector<size_t> 		fileField;
 		size_t						size;
-		Heuristic 				h_func_;
 
 		i = 1;
 		size = 0;
@@ -59,7 +57,7 @@ namespace NPuzzle
 						else
 							throw std::string("Error: Puzzle size overwriting on line #") + std::to_string(i); 
 					}
-					else if (std::distance(start, end) == size)
+					else if (std::distance(start, end) == static_cast<long>(size))
 					{
 						for (; start != std::sregex_iterator(); start++ )
 						{

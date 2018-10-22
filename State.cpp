@@ -4,7 +4,7 @@ size_t*		CopyPtrToPtr(const size_t* field);
 
 NPuzzle::State::~State()
 {
-	delete[] field_; 
+	delete[] field_;
 }
 
 int		NPuzzle::State::GetDuplicate(std::vector<State*>& v) const
@@ -137,6 +137,7 @@ bool		NPuzzle::State::operator==(const std::pair<size_t*, size_t> final_state) c
 
 NPuzzle::State*		NPuzzle::State::operator=(const State* st)
 {
+	delete field_;
 	SetField(CopyPtrToPtr(st->GetField()));
 	SetFCost(st->GetFCost());
 	SetGCost(st->GetGCost());
