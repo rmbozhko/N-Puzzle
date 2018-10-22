@@ -1,5 +1,7 @@
 #include "NPuzzle.hpp"
 
+size_t*		CopyPtrToPtr(const size_t* field);
+
 NPuzzle::State::~State()
 {
 	delete[] field_; 
@@ -7,19 +9,10 @@ NPuzzle::State::~State()
 
 int		NPuzzle::State::GetDuplicate(std::vector<State*>& v) const
 {
-	for (int i = 0; i < v.size(); ++i)
-	{
-	// 	std::cout << "-----------" << std::endl;
-	// 	NPuzzle::ft_print_arr(v[i]->GetField(), State::GetPuzzleLen());
-	// 	std::cout << "-----------" << std::endl;
-	// 	NPuzzle::ft_print_arr(GetField(), State::GetPuzzleLen());
+	for (int i = 0; static_cast<size_t>(i) < v.size(); ++i)
 		if (*this == v[i]->GetField())
-		{
-			// std::cout << "Found" << std::endl;
 			return (i);
-		}
-	}
-	// std::cout << "Not found" << std::endl;
+
 	return (-1);
 }
 
@@ -65,10 +58,8 @@ float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool i
 	float		res;
 
 	res = h_cost + g_cost;
-	// std::cout << "calcFCost: " << h_cost << ", " << g_cost << std::endl;
 	if (is_unicost)
 	{
-		// std::cout << "F_COST_PART: " << GetFCost() << ", G_COST_PART:" << GetGCost() << std::endl;
 		res += (GetFCost() - GetGCost());
 	}
 	return (res);
@@ -76,10 +67,6 @@ float		NPuzzle::State::calcFCost(const float h_cost, const size_t g_cost, bool i
 
 size_t*		NPuzzle::prepareField(size_t* field, const size_t x, const size_t y, const size_t pos, const size_t puzzle_len)
 {
-	// std::cout << "prepareField|Before" << std::endl;
-	// NPuzzle::ft_print_arr(field, puzzle_len);
-	// std::cout << "X:" << x << "|Y:" << y << "|pos:" << pos << std::endl;
-	// std::cout << "-------------------" << std::endl;
 	if (pos == 0 && y > 0)
 		std::swap(field[y * puzzle_len + x], field[(y - 1) * puzzle_len + x]);
 	else if (pos == 1 && y < puzzle_len - 1)
@@ -90,9 +77,6 @@ size_t*		NPuzzle::prepareField(size_t* field, const size_t x, const size_t y, co
 		std::swap(field[y * puzzle_len + x], field[y * puzzle_len + (x + 1)]);
 	else
 		return (nullptr);
-	// std::cout << "prepareField|After" << std::endl;
-	// NPuzzle::ft_print_arr(field, puzzle_len);
-	// std::cout << "---------------------" << std::endl;
 	return (field);
 }
 
@@ -105,7 +89,6 @@ std::vector<NPuzzle::State*> 	NPuzzle::State::GetChildren(const size_t puzzle_le
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		// std::cout << "Child #" << i << std::endl;
 		size_t*		new_field = new size_t[puzzle_len * puzzle_len];
 		for (size_t i = 0; i < puzzle_len * puzzle_len; ++i)
 			new_field[i] = TileAt(i);
@@ -113,8 +96,7 @@ std::vector<NPuzzle::State*> 	NPuzzle::State::GetChildren(const size_t puzzle_le
 		{
 			State* temp = new State(new_field,
 				calcFCost(solv.calcHeuristic(new_field), GetGCost() + 1, solv.IsUnicost()),
-				GetGCost() + 1);
-			temp->SetParent(this);
+				GetGCost() + 1, this);
 			v.push_back(temp);
 		}
 		else
@@ -155,14 +137,10 @@ bool		NPuzzle::State::operator==(const std::pair<size_t*, size_t> final_state) c
 
 NPuzzle::State*		NPuzzle::State::operator=(const State* st)
 {
-	// std::cout << "################################" << std::endl;
+	SetField(CopyPtrToPtr(st->GetField()));
 	SetFCost(st->GetFCost());
 	SetGCost(st->GetGCost());
 	SetParent(st->GetParent());
-	// State*	temp = new State(st->GetParent()->GetField(),
-								// st->GetParent()->GetFCost(),
-								// st->GetParent()->GetGCost());
-	// SetParent(temp);
 	return (this);
 }
 
